@@ -1,0 +1,151 @@
+/* 1. Reset básico para que todo se vea igual en cualquier PC/Celular */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Esto evita que los inputs se salgan del borde */
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+
+:root {
+    --azul-oscuro: #12274B;   /* Fondo principal o encabezados */
+    --azul-medio: #1468B1;    /* Botones primarios */
+    --azul-brillante: #2A7ABF; /* Destacados o hovers */
+    --azul-claro: #4C97D2;     /* Bordes o elementos secundarios */
+    --celeste-fondo: #D0EDFC;  /* Fondos de sección o tarjetas claras */
+    --blanco: #ffffff;
+}
+
+
+
+body {
+    background-color: #1a1a1a; /* Fondo oscuro pro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* 2. La tarjeta de Login (Flexible) */
+.login-card {
+    background: #2d2d2d;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 380px; /* En PC no crece más de esto */
+    text-align: center;
+    color: white;
+}
+
+.login-card h1 {
+    margin: 10px;
+}
+
+.login-card p {
+    margin-bottom: 10px;
+}
+
+/* 3. Inputs que se adaptan */
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background: #3d3d3d;
+    color: white;
+    font-size: 16px; /* Evita que el iPhone haga zoom automático al clickear */
+}
+
+
+/* Estilos para el logo de la aplicación */
+.logo-app {
+    display: block; /* Para que margin: auto funcione y se centre */
+    margin: 0 auto 20px auto; /* Centrado horizontal, y 20px de espacio abajo */
+    width: 110px; /* Tamaño del logo (ajustalo como quieras) */
+    height: 110px; /* Debe ser igual al width para que sea un círculo perfecto */
+    border-radius: 50%; /* ¡Esto lo hace redondo! */
+    object-fit: cover; /* Asegura que la imagen se vea bien sin estirarse */
+    
+}
+
+/* 4. Botón con efecto al tocar */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #3c6ae7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 10px;
+}
+
+button:active {
+    transform: scale(0.98); /* Efecto de pulsación */
+}
+
+
+/* Contenedor de las imágenes de fondo decorativas */
+body {
+    position: relative;
+    overflow: hidden; /* Evita que aparezcan barras de scroll por las imágenes */
+    background-color: #1a1a1a; /* Tu fondo oscuro actual */
+}
+
+body::before, body::after {
+    content: "";
+    position: absolute;
+    width: 400px;  /* Ajustá el tamaño según tus imágenes */
+    height: 400px;
+    z-index: -1;   /* Las manda atrás de todo */
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.3;  /* Esto les da el toque difuminado/transparente */
+    filter: blur(2px); /* Un poquito de desenfoque para que suavice */
+}
+
+/* Imagen de la esquina superior izquierda */
+body::before {
+    top: -50px;
+    left: -50px;
+    background-image: url('/public/media/fondoindex1.jpeg'); /* PONÉ TU IMAGEN ACÁ */
+    /* Degradado para que se funda hacia el centro */
+    mask-image: radial-gradient(circle, black 0%, transparent 80%);
+    -webkit-mask-image: radial-gradient(circle, black 0%, transparent 80%);
+}
+
+/* Imagen de la esquina inferior derecha */
+body::after {
+    bottom: -50px;
+    right: -50px;
+    background-image: url('/public/media/fondoindex2.jpeg'); /* PONÉ TU IMAGEN ACÁ */
+    /* Degradado para que se funda hacia el centro */
+    mask-image: radial-gradient(circle, black 0%, transparent 80%);
+    -webkit-mask-image: radial-gradient(circle, black 0%, transparent 80%);
+}
+
+
+/* Media Query para pantallas grandes (Computadoras) */
+@media (min-width: 1024px) {
+    body::before, body::after {
+        width: 800px;  /* Agrandamos el ancho al doble */
+        height: 800px; /* Agrandamos el alto al doble */
+        opacity: 0.2;  /* Al ser más grandes, bajamos un toque la opacidad para que no distraigan */
+    }
+
+    /* Ajustamos la posición para que no tapen el centro */
+    body::before {
+        top: -50px;
+        left: -50px;
+    }
+
+    body::after {
+        bottom: -50px;
+        right: -50px;
+    }
+}

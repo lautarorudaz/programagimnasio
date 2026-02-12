@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/css/profesor.css">
     <title>Panel del Profesor - Gimnasio</title>
     <style>
 
@@ -185,6 +186,7 @@ async function cargarAlumnos() {
         usuarios.forEach(u => {
             if (u.rol && u.rol.toLowerCase() === 'alumno') {
                 tabla.innerHTML += `
+                
                 <tr>
                     <td style="font-weight: bold; color: #333;">${u.nombre}</td>
                     <td style="color: #666;">${u.email}</td>
@@ -199,6 +201,8 @@ async function cargarAlumnos() {
     } catch (error) {
         console.error("Error al cargar:", error);
     }
+
+    
 }
 
 
