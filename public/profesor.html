@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel del Profesor - Gimnasio</title>
+    <style>
+
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+        .container { max-width: 400px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #218838; }
+        #mensaje { margin-top: 15px; color: blue; }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    th {
+        background-color: #34495e;
+        color: white;
+        padding: 12px;
+        text-align: left;
+    }
+
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
+    }
+
+    /* Estilo para los botones de la tabla */
+    .btn-accion {
+        padding: 6px 12px;
+        border-radius: 4px;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 13px;
+        margin-right: 5px;
+        transition: opacity 0.2s;
+    }
+
+    .btn-accion:hover { opacity: 0.8; }
+    .btn-ver { background-color: #27ae60; }
+    .btn-asignar { background-color: #2980b9; }
+    .btn-borrar { background-color: #c0392b; }
+
+    #formRegistro {
+    background: #fdfdfd;
+    padding: 25px;
+    border-radius: 10px;
+    border: 1px solid #eaeaea;
+    max-width: 400px;
+    margin: 20px auto;
+}
+
+#formRegistro input {
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Muy importante para que no se salgan del contenedor */
+}
+
+#formRegistro button {
+    width: 100%;
+    padding: 12px;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+
+    </style>
+
+
+
+</head>
+<body>
+
+    <h2 id="saludoProfe"></h2>
+
+    <div class="container">
+        <h2>Registrar Nuevo Alumno</h2>
+        <form id="formRegistro">
+            <input type="text" id="nombre" placeholder="Nombre completo" required>
+            <input type="email" id="email" placeholder="Correo electrónico" required>
+            <input type="password" id="password" placeholder="Contraseña temporal" required>
+            <button type="button" onclick="registrarNuevoAlumno()">Dar de Alta</button>
+        </form>
+        <div id="mensaje"></div>
+    </div>
+    
+    <div class="container" style="margin-top: 20px; max-width: 600px;">
+    <h3>Lista de Alumnos</h3>
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody id="tablaAlumnos">
+            </tbody>
+    </table>
+</div>
+
+<div id="verRutinaSeccion" style="display:none; margin-top:20px; background:#fff; padding:20px; border-radius:10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+    <h3>Rutina actual de: <span id="nombreAlumnoVer"></span></h3>
+    <div id="listaRutinasAsignadas"></div>
+    <br>
+    <button onclick="document.getElementById('verRutinaSeccion').style.display='none'" style="background:gray; color:white; padding:10px; border:none; cursor:pointer; width:100%;">Cerrar</button>
+</div>
+
+
+<div id="seccionAsignar" style="display:none; background:#f9f9f9; padding:20px; border-radius:10px;">
+    <h3>Asignar Rutina a: <span id="nombreAlumnoRutina"></span></h3>
+    
+    <input type="text" id="tituloRutina" placeholder="Ej: Rutina de Fuerza - Lunes" style="width: 90%; margin-bottom: 20px; padding: 10px; font-weight: bold;">
+
+    <div id="listaEjercicios">
+        <div class="fila-ejercicio" style="margin-bottom: 10px;">
+            <input type="text" placeholder="Ejercicio" class="n-ej" style="width: 40%;">
+            <input type="text" placeholder="Series x Reps" class="s-re" style="width: 20%;">
+            <input type="text" placeholder="Aclaraciones" class="com" style="width: 30%;">
+        </div>
+    </div>
+
+    <button onclick="agregarFila()" style="background:orange;">+ Agregar Ejercicio</button>
+    <hr>
+    <button onclick="guardarRutinaCompleta()" style="background:blue; color:white; padding:10px 20px;">GUARDAR RUTINA</button>
+    <button type="button" onclick="cancelar()" style="background-color: #27ae60; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px;">
+    Cancelar
+</button>
+</div>
+
+
+
+<button onclick="cerrarSesion()" style="background:gray; color:white; float:right;">Cerrar Sesión</button>
+
+    <script>
+
+
+
+
+
+// Validación de Seguridad
+const profeLogueado = JSON.parse(localStorage.getItem('usuarioLogueado'));
+
+if (!profeLogueado || profeLogueado.rol !== 'profesor') {
+    alert("Acceso denegado. Por favor, inicia sesión.");
+    window.location.href = 'index.html';
+}
+
+
+let idAlumnoSeleccionado = null;
+let nombreAlumnoSeleccionado = "";
+
+
+
+
+
+
+// 1. CARGAR ALUMNOS (Sin cambios de nombres)
+async function cargarAlumnos() {
+    try {
+        const respuesta = await fetch('http://localhost:3000/usuarios');
+        const usuarios = await respuesta.json();
+        const tabla = document.getElementById('tablaAlumnos');
+        tabla.innerHTML = ""; 
+
+        usuarios.forEach(u => {
+            if (u.rol && u.rol.toLowerCase() === 'alumno') {
+                tabla.innerHTML += `
+                <tr>
+                    <td style="font-weight: bold; color: #333;">${u.nombre}</td>
+                    <td style="color: #666;">${u.email}</td>
+                    <td>
+                    <button class="btn-accion btn-ver" onclick="verRutina(${u.id}, '${u.nombre}')">Ver</button>
+                    <button class="btn-accion btn-asignar" onclick="mostrarFormRutina(${u.id}, '${u.nombre}')">Asignar</button>
+                     <button class="btn-accion btn-borrar" onclick="eliminarAlumno(${u.id})">Borrar</button>
+                    </td>
+                </tr>`;
+            }
+        });
+    } catch (error) {
+        console.error("Error al cargar:", error);
+    }
+}
+
+
+// 1. Mantenemos el nombre que acordamos
+async function registrarNuevoAlumno() {
+    const nombre = document.getElementById('nombre').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const respuesta = await fetch('http://localhost:3000/registro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nombre: nombre,
+                email: email,
+                password: password,
+                rol: 'alumno'
+            })
+        });
+
+        if (respuesta.ok) {
+            alert("✅ Alumno registrado!");
+            document.getElementById('formRegistro').reset(); // Tu ID exacto
+            cargarAlumnos(); // Tu función para refrescar la lista
+        } else {
+            alert("❌ El servidor respondió con un error (Ruta no encontrada o datos mal enviados)");
+        }
+    } catch (error) {
+        alert("⚠️ No se pudo conectar con el servidor. Revisá la terminal.");
+    }
+}
+
+
+
+
+
+
+
+
+// 2. MOSTRAR EL FORMULARIO
+function mostrarFormRutina(id, nombre) {
+    idAlumnoSeleccionado = id;
+    document.getElementById('nombreAlumnoRutina').innerText = nombre;
+    document.getElementById('seccionAsignar').style.display = 'block';
+    // Limpiamos por si había algo antes
+    document.getElementById('contenedorEjercicios').innerHTML = "";
+}
+
+// 3. AGREGAR EJERCICIO (Resuelve el problema del "bloque rojo")
+function agregarFila() {
+    const contenedor = document.getElementById('listaEjercicios');
+    const div = document.createElement('div');
+    div.className = 'fila-ejercicio';
+    
+    // Contenedor flexible con espacio
+    div.style.display = "flex";
+    div.style.gap = "10px";
+    div.style.marginBottom = "10px";
+    div.style.alignItems = "center";
+
+    div.innerHTML = `
+        <input type="text" placeholder="Ejercicio" class="n-ej" style="flex: 2; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+        <input type="text" placeholder="Series x Reps" class="s-re" style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+        <input type="text" placeholder="Aclaraciones" class="com" style="flex: 2; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+        <button type="button" onclick="this.parentElement.remove()" 
+            style="flex: none; width: 35px; height: 35px; background-color: #e74c3c; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; transition: 0.3s;">
+            ✕
+        </button>
+    `;
+    
+    contenedor.appendChild(div);
+}
+
+// 4. ASIGNAR LA RUTINA (Usando nombres fijos: id_alumno y descripcion)
+async function guardarRutinaCompleta() {
+    const titulo = document.getElementById('tituloRutina').value || "Rutina General";
+    const filas = document.querySelectorAll('.fila-ejercicio');
+    let textoFinal = `📌 RUTINA: ${titulo.toUpperCase()}\n\n`;
+
+    filas.forEach(f => {
+        const ej = f.querySelector('.n-ej').value;
+        const sr = f.querySelector('.s-re').value;
+        const obs = f.querySelector('.com').value;
+        if (ej) {
+            textoFinal += `🏋️ ${ej} | 🔢 ${sr} | 📝 ${obs}\n`;
+        }
+    });
+
+    try {
+        const response = await fetch('http://localhost:3000/asignar-rutina', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                id_alumno: idAlumnoSeleccionado, 
+                descripcion: textoFinal 
+            })
+        });
+
+        if (response.ok) {
+            alert("¡Rutina guardada con éxito!");
+            document.getElementById('seccionAsignar').style.display = 'none';
+        }
+    } catch (error) {
+        console.error("Error al guardar:", error);
+        alert("Error de conexión con el servidor");
+    }
+}
+
+
+
+
+function cancelar() {
+    // Buscamos la sección del formulario de rutinas
+    const seccion = document.getElementById('seccionAsignar');
+    
+    if (seccion) {
+        // La ocultamos cambiando el display a 'none'
+        seccion.style.display = 'none';
+        
+        // Opcional: Limpiamos los campos para que no queden datos viejos la próxima vez
+        const formRutina = document.getElementById('nombreRutina');
+        if (formRutina) formRutina.value = "";
+        
+        const lista = document.getElementById('listaEjercicios');
+        if (lista) lista.innerHTML = ""; 
+        
+        console.log("Asignación de rutina cancelada.");
+    }
+}
+
+
+
+
+
+
+// 5. VER RUTINAS ASIGNADAS
+async function verRutina(id, nombre) {
+    idAlumnoSeleccionado = id;
+    nombreAlumnoSeleccionado = nombre;
+    try {
+        const res = await fetch(`http://localhost:3000/rutinas/${id}`);
+        const rutinas = await res.json();
+        
+        document.getElementById('verRutinaSeccion').style.display = 'block';
+        document.getElementById('nombreAlumnoVer').innerText = nombre;
+        
+        const lista = document.getElementById('listaRutinasAsignadas');
+        if(rutinas.length > 0) {
+            lista.innerHTML = rutinas.map(r => `
+                <div style="background:#fff; padding:15px; border-radius:8px; margin-bottom:15px; white-space: pre-line; border-left: 5px solid #28a745;">
+                    ${r.descripcion}
+                    <hr>
+                    <button onclick="borrarRutina(${r.id})" style="background:#ff4757; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">🗑️ Borrar</button>
+                </div>`).join('');
+        } else {
+            lista.innerHTML = "<p>Sin rutinas.</p>";
+        }
+    } catch (error) {
+        console.error("Error al ver rutina:", error);
+    }
+}
+
+// 6. BORRAR RUTINA ESPECÍFICA
+async function borrarRutina(idRutina) {
+    if (confirm("¿Eliminar esta rutina?")) {
+        const res = await fetch(`http://localhost:3000/borrar-rutina/${idRutina}`, { method: 'DELETE' });
+        if (res.ok) {
+            verRutina(idAlumnoSeleccionado, nombreAlumnoSeleccionado);
+        }
+    }
+}
+
+// 6. BORRAR ALUMNO
+async function eliminarAlumno(id) {
+    if (confirm("¿Estás seguro de que deseas eliminar este alumno? Esta acción no se puede deshacer.")) {
+        try {
+            const res = await fetch(`http://localhost:3000/eliminar-usuario/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                alert("Alumno eliminado correctamente");
+                cargarAlumnos(); // Recargamos la tabla para que ya no aparezca
+            } else {
+                alert("Error al eliminar el alumno");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("No se pudo conectar con el servidor");
+        }
+    }
+}
+
+function cerrarSesion() {
+    // Borramos los datos del profesor del almacenamiento local
+    localStorage.removeItem('usuarioLogueado');
+    // Redirigimos al index (o login)
+    window.location.href = 'index.html'; 
+}
+
+// Al cargar la página
+window.onload = cargarAlumnos;
+
+
+
+    </script>
+</body>
+</html>

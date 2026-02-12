@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Bienvenido al Gym</title>
+    <style>
+        /* Aquí puedes volar con tu imaginación */
+        body { font-family: 'Segoe UI', sans-serif; background: #222; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: #333; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 300px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; }
+        button { width: 100%; padding: 12px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #c0392b; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h1>GYM APP</h1>
+        <p>Inicia sesión para continuar</p>
+        <input type="email" id="email" placeholder="Correo electrónico">
+        <input type="password" id="password" placeholder="Contraseña">
+        <button onclick="entrar()">INGRESAR</button>
+        <p id="error" style="color: #ff7675;"></p>
+    </div>
+
+    <script>
+    async function entrar() {
+    // Capturamos los valores usando tus IDs: email y password
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const res = await fetch('http://localhost:3000/login-general', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            // GUARDADO CRÍTICO: Guardamos el objeto completo (id, nombre y ROL)
+            // Esto es lo que lee profesor.html y alumno.html para dejarte pasar
+            localStorage.setItem('usuarioLogueado', JSON.stringify(data));
+            
+            // Opcional: mantenemos estos por si los usás en otros scripts
+            localStorage.setItem('usuarioId', data.id);
+            localStorage.setItem('usuarioNombre', data.nombre);
+
+            // Redirección inteligente según el rol que viene de la DB
+            if (data.rol === 'profesor') {
+                window.location.href = 'profesor.html';
+            } else {
+                window.location.href = 'alumno.html';
+            }
+        } else {
+            // Usamos tu párrafo de error con id="error"
+            document.getElementById('error').innerText = data.message;
+        }
+    } catch (error) {
+        console.error("Error en el login:", error);
+        document.getElementById('error').innerText = "Error al conectar con el servidor";
+    }
+}
+    </script>
+</body>
+</html>
