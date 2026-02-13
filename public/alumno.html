@@ -2,88 +2,324 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mi Rutina - GYM APP</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #222; color: white; display: flex; justify-content: center; padding: 50px; }
-        .card { background: #333; padding: 30px; border-radius: 15px; width: 100%; max-width: 500px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-        .rutina-item { background: #444; padding: 15px; margin: 10px 0; border-left: 5px solid #e74c3c; border-radius: 5px; }
-        button { background: #555; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; margin-top: 20px; }
-        button:hover { background: #777; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Alumnos - Anima App</title>
+    <link rel="stylesheet" href="/public/css/alumno.css">
 </head>
 <body>
 
-    <div class="card">
-        <h1>Hola, <span id="nombreAlumno">...</span></h1>
-        <p>Esta es tu rutina de hoy:</p>
+  <nav class="navbar">
+    <div class="nav-container">
+        <a href="#" class="logo">Anima App</a>
         
-        <div id="contenedorRutinas">
-            </div>
+        <button class="menu-toggle" id="mobile-menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
 
-        <button onclick="cerrarSesion()">Cerrar Sesión</button>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="indexprofesor.html">Inicio</a></li>
+            <li><a href="alumno.html" class="active">Alumnos</a></li>
+            <li><a href="cuotas.html">Cuotas</a></li>
+            <li><a href="rutinas.html">Rutinas</a></li>
+            <li><button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button></li>
+        </ul>
+    </div>
+</nav>
+
+    <main class="main-content">
+        <div class="header-section">
+            <h1>Gestión de Alumnos</h1>
+            <button class="btn-agregar" onclick="abrirModal()">+ Agregar Nuevo Alumno</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre y Apellido</th>
+                        <th>Email</th>
+                        <th>Edad</th>
+                        <th>Fecha de alta</th>
+                        <th>Estado</th>
+                        <th >Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaAlumnosReal">
+                    </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div id="modalAlumno" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="cerrarModal()">&times;</span>
+            <h2>Registrar Alumno</h2>
+            <form id="formAlumno">
+                <div class="input-group">
+                    <label>Nombre</label>
+                    <input type="text" id="nombre" placeholder="Ej: Juan" required>
+                </div>
+                <div class="input-group">
+                    <label>Apellido</label>
+                    <input type="text" id="apellido" placeholder="Ej: Pérez" required>
+                </div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="email" placeholder="ejemplo@correo.com" required>
+                </div>
+                 <div class="input-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="passAlumno" placeholder="Contraseña temporal" required>
+                </div>
+                <div class="input-group">
+                    <label>Edad</label>
+                    <input type="number" id="edad" placeholder="25" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-confirm">Guardar Alumno</button>
+                    <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
+    <script>
 
 
+// 1. VARIABLES GLOBALES
+    const formulario = document.getElementById('formAlumno');
+    const tabla = document.getElementById('tablaAlumnosReal');
+    const modal = document.getElementById('modalAlumno');
+    // Obtenemos tu sesión (Asegúrate que en el login guardes como 'usuario')
+    const miSesion = JSON.parse(localStorage.getItem('usuario'));
 
-<script>
+    // 2. CONTROL DE ACCESO (Seguridad)
+    if (!miSesion || miSesion.rol !== 'profesor') {
+        alert("Acceso denegado");
+        window.location.href = 'sesion.html';
+    }
 
+    // 3. FUNCIONES DEL MODAL
+    function abrirModal() {
+        modal.style.display = 'block';
+    }
 
-// 1. VARIABLES GLOBALES Y SEGURIDAD
-const alumnoLogueado = JSON.parse(localStorage.getItem('usuarioLogueado'));
+    function cerrarModal() {
+        modal.style.display = 'none';
+        formulario.reset();
+    }
 
-// Validación de acceso
-if (!alumnoLogueado || alumnoLogueado.rol !== 'alumno') {
-    alert("Acceso denegado. Por favor, inicia sesión.");
-    window.location.href = 'index.html';
+    // 4. FUNCIÓN PARA CARGAR LA TABLA (Traer datos de MySQL)
+async function cargarAlumnos() {
+    const tabla = document.getElementById('tablaAlumnosReal');
+    const miSesion = JSON.parse(localStorage.getItem('usuario'));
+
+    try {
+        const respuesta = await fetch(`http://localhost:3000/api/alumnos/${miSesion.id}`);
+        const alumnos = await respuesta.json();
+
+        tabla.innerHTML = ""; 
+
+        alumnos.forEach(alum => {
+            const fecha = new Date(alum.fecha_alta).toLocaleDateString();
+            const estaActivo = alum.estado === 1;
+            
+            const tr = document.createElement('tr');
+            if (!estaActivo) tr.style.opacity = "0.5";
+
+            // Aquí armamos la fila sin dejar palabras sueltas que den error
+tr.innerHTML = `
+    <td data-label="Nombre"><span>${alum.nombre} ${alum.apellido}</span></td>
+    <td data-label="Email"><span>${alum.email}</span></td>
+    <td data-label="Edad"><span>${alum.edad}</span></td>
+    <td data-label="Fecha"><span>${fecha}</span></td>
+    <td data-label="Estado"><span>${estaActivo ? 'Activo' : 'Pausado'}</span></td>
+    <td data-label="Acciones" class="actions-cell">
+        <button class="btn-action" onclick="editar(${alum.id})">✏️</button>
+        <button class="btn-action" id="btn-estado-${alum.id}">${estaActivo ? '⏸️' : '▶️'}</button>
+        <button class="btn-action" onclick="eliminar(${alum.id})">🗑️</button>
+    </td>
+`;
+            
+            tabla.appendChild(tr);
+
+            // Vinculamos el evento de forma segura (así evitamos el "not defined")
+            document.getElementById(`btn-estado-${alum.id}`).addEventListener('click', () => {
+                cambiarEstado(alum.id, alum.estado);
+            });
+        });
+    } catch (error) {
+        console.error("Error cargando tabla:", error);
+    }
 }
 
-// Al cargar la página
-window.onload = () => {
-    // USAMOS EL ID DE TU HTML: "nombreAlumno"
-    const spanNombre = document.getElementById('nombreAlumno');
-    if (spanNombre) {
-        spanNombre.innerText = alumnoLogueado.nombre;
+    // 5. FUNCIÓN PARA GUARDAR (Enviar a MySQL)
+    formulario.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const nuevoAlumno = {
+            nombre: document.getElementById('nombre').value,
+            apellido: document.getElementById('apellido').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('passAlumno').value,
+            edad: document.getElementById('edad').value,
+            profesor_id: miSesion.id // Te vinculamos automáticamente
+        };
+
+        try {
+            const res = await fetch('http://localhost:3000/api/alumnos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevoAlumno)
+            });
+
+            if (res.ok) {
+                alert("✅ Alumno guardado con éxito");
+                cerrarModal();
+                cargarAlumnos(); // Refrescamos la tabla sin recargar la página
+            } else {
+                alert("❌ Error al guardar");
+            }
+        } catch (error) {
+            alert("No hay conexión con el servidor (Node)");
+        }
+    });
+
+    // 6. INICIO AUTOMÁTICO
+    // Apenas carga la página, traemos los alumnos
+    document.addEventListener('DOMContentLoaded', cargarAlumnos);
+
+
+// ELIMINAR ALUMNO
+async function eliminar(id) {
+    if (confirm("¿Estás seguro de que deseas dar de baja a este alumno?")) {
+        try {
+            const res = await fetch(`http://localhost:3000/api/alumnos/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                alert("Alumno eliminado correctamente");
+                cargarAlumnos(); // Recargamos la tabla para que desaparezca
+            } else {
+                alert("Error al eliminar el alumno");
+            }
+        } catch (error) {
+            console.error("Error de conexión:", error);
+        }
     }
-    cargarMisRutinas();
-};
+}
+
+// EDITAR ALUMNO
+function editar(id) {
+    alert("Función para editar el alumno ID: " + id + " próximamente disponible.");
+    // Aquí podrías abrir un modal con los datos cargados para modificar
+}
 
 
 
 
-// 2. FUNCIÓN PARA CARGAR LAS RUTINAS
-async function cargarMisRutinas() {
+async function cambiarEstado(id, estadoActual) {
+    const nuevoEstado = estadoActual === 1 ? 0 : 1;
+    console.log(`Intentando cambiar alumno ${id} al estado: ${nuevoEstado}`);
+
     try {
-        const idAlumno = alumnoLogueado.id;
-        const res = await fetch(`http://localhost:3000/rutinas/${idAlumno}`);
-        const rutinas = await res.json();
-        
-        // USAMOS EL ID DE TU HTML: "contenedorRutinas"
-        const contenedor = document.getElementById('contenedorRutinas');
-        
-        if (rutinas.length > 0) {
-            contenedor.innerHTML = rutinas.map(r => `
-                <div style="background:#1e1e1e; color: white; padding:20px; border-radius:12px; margin-bottom:20px; border-left: 5px solid #2ecc71; white-space: pre-line; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: left;">
-                    ${r.descripcion}
-                </div>
-            `).join('');
+        const res = await fetch(`http://localhost:3000/api/alumnos/estado/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nuevoEstado: nuevoEstado })
+        });
+
+        if (res.ok) {
+            console.log("Servidor respondió OK");
+            await cargarAlumnos(); // Esto vuelve a dibujar la tabla con los datos nuevos
         } else {
-            contenedor.innerHTML = "<p style='color:#888;'>Aún no tienes rutinas asignadas.</p>";
+            const errorMsg = await res.text();
+            alert("El servidor no pudo actualizar: " + errorMsg);
         }
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error de red:", error);
+        alert("No se pudo conectar con el servidor.");
     }
 }
+
+
+
+
+// Cargar la tabla apenas se abre la página
+document.addEventListener('DOMContentLoaded', cargarAlumnos);
+
+
+
+
+
+
+// Lógica para abrir/cerrar menú hamburguesa
+const menuBtn = document.getElementById('mobile-menu');
+const navLinks = document.getElementById('nav-links');
+
+menuBtn.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+});
+
+// MODIFICA tu función cargarAlumnos para que incluya los data-label:
+alumnos.forEach(alum => {
+    const tr = document.createElement('tr');
+    const estaActivo = parseInt(alum.estado) === 1;
+
+    tr.innerHTML = `
+        <td data-label="Alumno">${alum.nombre} ${alum.apellido}</td>
+        <td data-label="Email">${alum.email}</td>
+        <td data-label="Edad">${alum.edad}</td>
+        <td data-label="Alta">${new Date(alum.fecha_alta).toLocaleDateString()}</td>
+        <td data-label="Estado">
+            <span class="badge ${estaActivo ? 'bg-success' : 'bg-danger'}">
+                ${estaActivo ? 'Activo' : 'Pausado'}
+            </span>
+        </td>
+        <td class="actions-cell">
+            <button class="btn-action" onclick="editar(${alum.id})">✏️</button>
+            <button class="btn-action" onclick="cambiarEstado(${alum.id}, ${alum.estado})">
+                ${estaActivo ? '⏸️' : '▶️'}
+            </button>
+            <button class="btn-action" onclick="eliminar(${alum.id})">🗑️</button>
+        </td>
+    `;
+    tabla.appendChild(tr);
+});
+
 
 
 
 // 3. FUNCIÓN DE CIERRE DE SESIÓN
 function cerrarSesion() {
     localStorage.removeItem('usuarioLogueado');
-    window.location.href = 'index.html';
+    window.location.href = 'sesion.html';
 }
+
+
 
 
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

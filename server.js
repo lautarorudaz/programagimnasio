@@ -48,6 +48,25 @@ app.get('/usuarios', (req, res) => {
     });
 });
 
+
+
+// Ruta para obtener alumnos de UN profesor específico
+// Ruta para obtener los alumnos de un profesor específico
+app.get('/api/alumnos/:profesorId', (req, res) => {
+    const { profesorId } = req.params;
+    const sql = "SELECT id, nombre, apellido, email, edad, estado, fecha_alta FROM alumnos WHERE profesor_id = ?";
+    
+    db.query(sql, [profesorId], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Error al obtener alumnos");
+        }
+        res.json(results); // Enviamos la lista de alumnos al frontend
+    });
+});
+
+
+
 // BORRAR UN ALUMNO
 app.delete('/eliminar-usuario/:id', (req, res) => {
     const id = req.params.id;
@@ -158,6 +177,106 @@ app.delete('/borrar-rutina/:id', (req, res) => {
         res.send("Rutina eliminada");
     });
 });
+
+
+
+
+app.get('/api/estadisticas/:profesorId', (req, res) => {
+    const { profesorId } = req.params;
+    const sql = `
+        SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN estado = 1 THEN 1 ELSE 0 END) as activos,
+            SUM(CASE WHEN estado = 0 THEN 1 ELSE 0 END) as inactivos
+        FROM alumnos WHERE profesor_id = ?`;
+
+    db.query(sql, [profesorId], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json(result[0]);
+    });
+});
+
+
+
+app.post('/api/alumnos', (req, res) => {
+    // 1. Extraemos los datos del body (image_865545.png confirmaba que faltaba password)
+    const { nombre, apellido, email, password, edad, profesor_id } = req.body;
+
+    // 2. Cambiamos 'activo' por el número 1 para evitar el error de la imagen 86595d.png
+    const sql = "INSERT INTO alumnos (nombre, apellido, email, password, edad, fecha_alta, estado, profesor_id) VALUES (?, ?, ?, ?, ?, CURDATE(), 1, ?)";
+
+    db.query(sql, [nombre, apellido, email, password, edad, profesor_id], (err, result) => {
+        if (err) {
+            console.error("Error en MySQL:", err); // Esto te mostrará si hay otro detalle
+            return res.status(500).send(err);
+        }
+        res.json({ mensaje: "Alumno registrado con éxito", id: result.insertId });
+    });
+});
+
+
+app.delete('/api/alumnos/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = "DELETE FROM alumnos WHERE id = ?";
+
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Error al eliminar de la base de datos");
+        }
+        res.status(200).send({ message: "Alumno eliminado con éxito" });
+    });
+});
+
+
+
+
+
+app.put('/api/alumnos/estado/:id', (req, res) => {
+    const { id } = req.params;
+    const { nuevoEstado } = req.body; // Esto recibe el 0 o 1
+
+    const sql = "UPDATE alumnos SET estado = ? WHERE id = ?";
+    
+    db.query(sql, [nuevoEstado, id], (err, result) => {
+        if (err) {
+            console.error("Error en DB:", err);
+            return res.status(500).send(err);
+        }
+        // Si el cambio fue exitoso, avisamos al frontend
+        res.status(200).send({ message: "Estado actualizado con éxito" });
+    });
+});
+
+
+
+app.get('/api/stats/:profesorId', (req, res) => {
+    const { profesorId } = req.params;
+    
+    const sqlAl = "SELECT COUNT(*) as total FROM alumnos WHERE profesor_id = ? AND (estado = 1 OR estado = 'activo')";
+    const sqlRu = "SELECT COUNT(*) as total FROM rutinas WHERE profesor_id = ?";
+    const sqlOk = "SELECT COUNT(*) as total FROM cuotas WHERE profesor_id = ? AND estado = 'pagado'";
+    const sqlVe = "SELECT COUNT(*) as total FROM cuotas WHERE profesor_id = ? AND estado = 'pendiente' AND fecha_vencimiento < CURDATE()";
+
+    db.query(sqlAl, [profesorId], (err, resAl) => {
+        db.query(sqlRu, [profesorId], (err, resRu) => {
+            db.query(sqlOk, [profesorId], (err, resOk) => {
+                db.query(sqlVe, [profesorId], (err, resVe) => {
+                    
+                    // Validamos cada resultado antes de mandarlo para evitar el error de image_85e468.png
+                    res.json({
+                        socios: (resAl && resAl[0]) ? resAl[0].total : 0,
+                        rutinas: (resRu && resRu[0]) ? resRu[0].total : 0,
+                        cuotas: (resOk && resOk[0]) ? resOk[0].total : 0,
+                        vencidas: (resVe && resVe[0]) ? resVe[0].total : 0
+                    });
+                });
+            });
+        });
+    });
+});
+
+
 
 
 

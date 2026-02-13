@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio</title>
+    <link rel="stylesheet" href="/public/css/indexprofesor.css">
+</head>
+<body>
+    <div class="app-container">
+    <nav class="top-nav">
+        <div class="nav-content">
+            <div class="logo-brand">
+                <img src="URL_DE_TU_LOGO" alt="Logo">
+                <span>Anima App</span>
+            </div>
+            
+            <ul class="nav-links">
+                <li><a href="indexprofesor.html" class="active">Inicio</a></li>
+                <li><a href="/public/alumno.html">Alumnos</a></li>
+                <li><a href="cuotas.html">Cuotas</a></li>
+                <li><a href="rutinas.html">Rutinas</a></li>
+            </ul>
+
+            <div class="user-actions">
+                <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="welcome-header">
+            <h1>Panel de Control</h1>
+            <p>Bienvenido, <span id="nombreProfe" class="text-blue">Profesor</span></p>
+        </header>
+
+        <section class="stats-container">
+            <div class="stat-card">
+                <span class="stat-title">Socios Activos</span>
+                <span class="stat-number" id="totalSocios">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title">Rutinas Activas</span>
+                <span class="stat-number" id="totalRutinas">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title">Cuotas OK</span>
+                <span class="stat-number" id="totalCuotasOk">0</span>
+            </div>
+            <div class="stat-card urgent">
+                <span class="stat-title">Vencidas</span>
+                <span class="stat-number" id="totalVencidas">0</span>
+            </div>
+        </section>
+
+        <section class="staff-section">
+            <h2 class="section-title">Profesores Staff Registrados</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre y Apellido</th>
+                            <th>Años</th>
+                            <th>Email</th>
+                            <th>Fecha de Alta</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaProfesores">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+<script>
+
+function cerrarSesion() {
+    // Borramos los datos del profesor del almacenamiento local
+    localStorage.removeItem('usuarioLogueado');
+    // Redirigimos al index (o login)
+    window.location.href = 'sesion.html'; 
+}
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Obtener datos del profesor desde el localStorage
+    const usuarioLogueado = JSON.parse(localStorage.getItem('usuario'));
+
+    if (!usuarioLogueado || usuarioLogueado.rol !== 'profesor') {
+        window.location.href = 'sesion.html';
+        return;
+    }
+
+    // 2. Mostrar el nombre en el saludo
+    document.getElementById('nombreProfe').textContent = usuarioLogueado.nombre;
+
+    // 3. Cargar estadísticas reales desde el servidor
+    try {
+        const respuesta = await fetch(`/api/estadisticas/${usuarioLogueado.id}`);
+        const stats = await respuesta.json();
+
+        // Actualizar los números en las tarjetas
+        document.getElementById('totalSocios').textContent = stats.totalAlumnos;
+        document.getElementById('totalRutinas').textContent = stats.totalRutinas;
+        document.getElementById('totalCuotasOk').textContent = stats.cuotasAlDia;
+        document.getElementById('totalVencidas').textContent = stats.cuotasVencidas;
+        
+    } catch (error) {
+        console.error("Error al cargar estadísticas:", error);
+    }
+    
+    // Aquí también podrías llamar a la función para cargar la tabla de profesores staff
+    cargarStaff();
+});
+
+
+
+
+async function cargarEstadisticas() {
+    const miSesion = JSON.parse(localStorage.getItem('usuario'));
+    if (!miSesion) return;
+
+    try {
+        const respuesta = await fetch(`http://localhost:3000/api/stats/${miSesion.id}`);
+        const data = await respuesta.json();
+
+        // Usamos los IDs que tenés en tu HTML (image_85d61f.png)
+        document.getElementById('totalSocios').textContent = data.socios ?? 0;
+        document.getElementById('totalRutinas').textContent = data.rutinas ?? 0;
+        document.getElementById('totalCuotasOk').textContent = data.cuotas ?? 0;
+        document.getElementById('totalVencidas').textContent = data.vencidas ?? 0;
+
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', cargarEstadisticas);
+
+
+// Se ejecuta apenas carga la página
+document.addEventListener('DOMContentLoaded', cargarEstadisticas);
+
+
+
+
+</script>
+</body>
+</html>

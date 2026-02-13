@@ -207,36 +207,6 @@ async function cargarAlumnos() {
 
 
 // 1. Mantenemos el nombre que acordamos
-async function registrarNuevoAlumno() {
-    const nombre = document.getElementById('nombre').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    try {
-        const respuesta = await fetch('http://localhost:3000/registro', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                nombre: nombre,
-                email: email,
-                password: password,
-                rol: 'alumno'
-            })
-        });
-
-        if (respuesta.ok) {
-            alert("✅ Alumno registrado!");
-            document.getElementById('formRegistro').reset(); // Tu ID exacto
-            cargarAlumnos(); // Tu función para refrescar la lista
-        } else {
-            alert("❌ El servidor respondió con un error (Ruta no encontrada o datos mal enviados)");
-        }
-    } catch (error) {
-        alert("⚠️ No se pudo conectar con el servidor. Revisá la terminal.");
-    }
-}
-
-
 
 
 
@@ -401,7 +371,7 @@ function cerrarSesion() {
     // Borramos los datos del profesor del almacenamiento local
     localStorage.removeItem('usuarioLogueado');
     // Redirigimos al index (o login)
-    window.location.href = 'index.html'; 
+    window.location.href = 'sesion.html'; 
 }
 
 // Al cargar la página
