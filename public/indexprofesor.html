@@ -7,26 +7,31 @@
     <link rel="stylesheet" href="/public/css/indexprofesor.css">
 </head>
 <body>
-    <div class="app-container">
-    <nav class="top-nav">
-        <div class="nav-content">
-            <div class="logo-brand">
-                <img src="URL_DE_TU_LOGO" alt="Logo">
-                <span>Anima App</span>
-            </div>
-            
-            <ul class="nav-links">
-                <li><a href="indexprofesor.html" class="active">Inicio</a></li>
-                <li><a href="/public/alumno.html">Alumnos</a></li>
-                <li><a href="cuotas.html">Cuotas</a></li>
-                <li><a href="rutinas.html">Rutinas</a></li>
-            </ul>
 
-            <div class="user-actions">
-                <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
-            </div>
-        </div>
-    </nav>
+<nav class="navbar">
+    <div class="logo-container">
+        <a href="indexprofesor.html" class="logo-text">Anima App</a>
+    </div>
+
+    <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+
+    <ul class="nav-links">
+        <li><a href="indexprofesor.html" class="active">Inicio</a></li>
+        <li><a href="/public/alumno.html">Alumnos</a></li>
+        <li><a href="cuotas.html">Cuotas</a></li>
+        <li><a href="rutinas.html">Rutinas</a></li>
+        <li><button class="btn-cerrar-sesion" onclick="cerrarSesion()">Cerrar Sesión</button></li>
+    </ul>
+</nav>
+
+
+
+<div class="app-container">
+
 
     <main class="main-content">
         <header class="welcome-header">
@@ -53,26 +58,48 @@
             </div>
         </section>
 
-        <section class="staff-section">
-            <h2 class="section-title">Profesores Staff Registrados</h2>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nombre y Apellido</th>
-                            <th>Años</th>
-                            <th>Email</th>
-                            <th>Fecha de Alta</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaProfesores">
-                        </tbody>
-                </table>
-            </div>
-        </section>
+        <div class="header-profes">
+    <button class="btn-nuevo" onclick="abrirModalProfe()">+ Agregar Nuevo Profesor</button>
+</div>
+
+<div id="modalProfe" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalProfe()">&times;</span>
+        <h2>Registrar Nuevo Profesor</h2>
+        <form id="formNuevoProfe">
+            <input type="text" id="p_nombre" placeholder="Nombre" required>
+            <input type="text" id="p_apellido" placeholder="Apellido" required>
+            <input type="email" id="p_email" placeholder="Correo Electrónico" required>
+            <input type="password" id="p_pass" placeholder="Contraseña de Acceso" required>
+            <input type="number" id="p_edad" placeholder="Edad" required>
+            <button type="submit" class="btn-guardar-profe">Habilitar Profesor</button>
+        </form>
+    </div>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nombre y Apellido</th>
+            <th>Correo</th>
+            <th>Edad</th>
+            <th>Alumnos a Cargo</th>
+        </tr>
+    </thead>
+    <tbody id="listaProfesores"></tbody>
+</table>
     </main>
 </div>
 <script>
+
+
+const mobileMenu = document.getElementById('mobile-menu');
+const navLinks = document.querySelector('.nav-links');
+
+mobileMenu.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+});
+
 
 function cerrarSesion() {
     // Borramos los datos del profesor del almacenamiento local
@@ -80,6 +107,109 @@ function cerrarSesion() {
     // Redirigimos al index (o login)
     window.location.href = 'sesion.html'; 
 }
+
+
+
+async function cargarProfesores() {
+    try {
+        const res = await fetch('http://localhost:3000/api/profesores-lista');
+        const profesores = await res.json();
+        const tabla = document.getElementById('listaProfesores');
+        tabla.innerHTML = '';
+
+        profesores.forEach(profe => {
+            const tr = document.createElement('tr');
+           tr.innerHTML = `
+        <td data-label="Nombre">${profe.nombre} ${profe.apellido || ''}</td>
+        <td data-label="Correo">${profe.email}</td>
+        <td data-label="Edad">${profe.edad > 0 ? profe.edad + ' años' : 'N/A'}</td> 
+        <td data-label="Alumnos"><strong>${profe.total_alumnos}</strong> alumnos</td>
+        <td>
+            <button class="btn-eliminar" onclick="eliminarProfesor(${profe.id})">🗑️ Borrar</button>
+        </td>
+    `;
+            tabla.appendChild(tr);
+        });
+    } catch (error) {
+        console.error("Error cargando profes:", error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', cargarProfesores);
+
+
+
+
+
+
+
+function abrirModalProfe() {
+    document.getElementById('modalProfe').style.display = 'block';
+}
+
+function cerrarModalProfe() {
+    document.getElementById('modalProfe').style.display = 'none';
+}
+
+// Escuchar el envío del formulario
+document.getElementById('formNuevoProfe').onsubmit = async (e) => {
+    e.preventDefault();
+
+    const datos = {
+        nombre: document.getElementById('p_nombre').value,
+        apellido: document.getElementById('p_apellido').value,
+        email: document.getElementById('p_email').value,
+        password: document.getElementById('p_pass').value,
+        edad: parseInt(document.getElementById('p_edad').value)
+    };
+
+    try {
+        const res = await fetch('http://localhost:3000/api/registrar-profesor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+
+        if (res.ok) {
+            alert("Profesor registrado con éxito");
+            cerrarModalProfe();
+            cargarProfesores(); // Recargamos la lista para ver al nuevo colega
+        } else {
+            alert("Error al registrar");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+    }
+};
+
+
+
+
+async function eliminarProfesor(id) {
+    if (confirm("¿Estás seguro de que querés eliminar a este profesor? Esta acción no se puede deshacer.")) {
+        try {
+            const res = await fetch(`http://localhost:3000/api/eliminar-profesor/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                alert("Profesor eliminado");
+                cargarProfesores(); // Recargamos la lista automáticamente
+            } else {
+                alert("Error al intentar eliminar");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+}
+
+
+
+
+
+
+
 
 
 document.addEventListener('DOMContentLoaded', async () => {

@@ -15,58 +15,110 @@ body {
     font-family: 'Inter', sans-serif;
 }
 
-/* --- NAVIGATION --- */
-.top-nav {
-    background-color: #12274B; /* Tu azul oscuro */
-    padding: 1rem 2rem;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    border-bottom: 2px solid var(--blue-main);
-}
-
-.nav-content {
-    max-width: 1200px;
-    margin: 0 auto;
+/* Estilos Generales Navbar */
+.navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 15px 5%;
+    background-color: #000; /* Fondo negro puro */
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
-.logo-brand { display: flex; align-items: center; gap: 10px; font-weight: bold; }
-.logo-brand img { width: 40px; border-radius: 50%; }
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #2447ff; /* Color azul del logo */
+    text-decoration: none;
+}
 
 .nav-links {
-    list-style: none;
     display: flex;
-    gap: 30px;
-    margin: 0;
-    padding: 0;
+    list-style: none;
+    align-items: center;
+    gap: 25px;
 }
 
 .nav-links a {
-    color: var(--text-gray);
+    color: white;
     text-decoration: none;
-    font-weight: 500;
+    font-size: 1rem;
     transition: 0.3s;
 }
 
-.nav-links a:hover, .nav-links a.active {
-    color: var(--text-white);
-    text-shadow: 0 0 10px var(--blue-glow);
+/* Subrayado de la página activa */
+.nav-links a.active {
+    border-bottom: 2px solid #2447ff;
+    padding-bottom: 5px;
 }
 
-.btn-logout {
+/* Botón Cerrar Sesión Estilo Alumno */
+.btn-cerrar-sesion {
     background: transparent;
-    border: 1px solid var(--red-alert);
-    color: var(--red-alert);
+    border: 1px solid #ff4d4d;
+    color: #ff4d4d;
     padding: 8px 15px;
     border-radius: 5px;
     cursor: pointer;
     transition: 0.3s;
 }
 
-.btn-logout:hover { background: var(--red-alert); color: white; }
+.btn-cerrar-sesion:hover {
+    background: #ff4d4d;
+    color: white;
+}
+
+/* --- RESPONSIVE (MENÚ HAMBURGUESA) --- */
+/* --- ESTILO DEL BOTÓN HAMBURGUESA --- */
+.menu-toggle {
+    display: none; /* Se oculta en PC */
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 21px; /* Altura fija para que las barras se repartan */
+    cursor: pointer;
+}
+
+.bar {
+    width: 100%;
+    height: 3px;
+    background-color: white;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: flex; /* Se muestra en Mobile */
+    }
+
+    /* Estilos del menú desplegable (Igual a alumnos.html) */
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background-color: #000;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        padding: 20px 0;
+        text-align: center;
+        border-bottom: 2px solid #2447ff;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .nav-links a.active {
+        border-bottom: 2px solid #2447ff;
+        display: inline-block;
+        padding-bottom: 5px;
+    }
+}
 
 /* --- LAYOUT --- */
 .main-content {
@@ -114,3 +166,247 @@ table { width: 100%; border-collapse: collapse; }
 th { background: #1a2a44; padding: 15px; text-align: left; font-size: 0.9rem; }
 td { padding: 15px; border-bottom: 1px solid #333; color: var(--text-gray); }
 tr:hover { background: #252525; }
+
+
+
+.btn-nuevo {
+    background-color: #27ae60;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 20px;
+    transition: 0.3s;
+}
+
+.btn-nuevo:hover {
+    background-color: #2ecc71;
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+}
+
+
+/* Contenedor del formulario */
+#formNuevoProfe {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espacio entre cada campo */
+    padding: 20px;
+}
+
+/* Estilo para los inputs */
+#formNuevoProfe input {
+    width: 100%;
+    padding: 12px;
+    background-color: #1a1a1a; /* Fondo oscuro */
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: white;
+    font-size: 1rem;
+    box-sizing: border-box; /* Evita que el padding lo ensanche */
+}
+
+/* Estilo para el botón de enviar */
+.btn-guardar-profe {
+    background-color: #27ae60;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s;
+}
+
+.btn-guardar-profe:hover {
+    background-color: #2ecc71;
+}
+
+
+.btn-guardar-profe {
+    width: 100%;
+    padding: 14px;
+    margin-top: 20px;
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+}
+
+.btn-guardar-profe:hover {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    transform: translateY(-2px); /* Efecto de que flota */
+    box-shadow: 0 6px 20px rgba(46, 204, 113, 0.5);
+}
+
+.btn-guardar-profe:active {
+    transform: translateY(0); /* Al hacer click baja */
+}
+
+
+
+.btn-eliminar {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+
+.btn-eliminar:hover {
+    background-color: #c0392b;
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.4);
+}
+
+/* Este es el contenedor principal del modal */
+/* El fondo negro transparente */
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* Oscurece el fondo */
+    backdrop-filter: blur(5px); /* Efecto borroso de fondo */
+}
+
+/* La cajita blanca/oscura del formulario */
+.modal-content {
+    background-color: #111; /* Fondo muy oscuro */
+    margin: 5% auto; /* Centrado vertical y horizontal */
+    padding: 30px;
+    border: 1px solid #333;
+    width: 90%; 
+    max-width: 450px; /* 👈 Esto evita que tape toda la pantalla */
+    border-radius: 15px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* El botón de cerrar (X) */
+.close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: white;
+}
+
+
+@media (max-width: 768px) {
+    .menu-toggle { display: flex; } /* Mostramos el botón */
+
+    .nav-links {
+        display: none; /* Escondemos los links por defecto */
+        flex-direction: column;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        background: #0a0a0a;
+        padding: 20px;
+        text-align: center;
+        border-bottom: 2px solid #27ae60;
+    }
+
+    .nav-links.active { display: flex; }
+
+
+
+    /* AJUSTE PARA QUE EL BOTÓN NO SE ROMPA */
+    .btn-eliminar {
+        display: block;
+        width: 100%; /* Ocupa el ancho de la tarjeta */
+        margin: 10px 0 0 0; 
+        position: static; /* Quita cualquier absolute */
+        box-sizing: border-box; /* Evita que el padding lo ensanche de más */
+    }
+
+    /* 2. Transformar la Tabla en Tarjetas */
+   table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+    }
+
+    thead tr {
+        display: none; /* Escondemos los títulos originales */
+    }
+
+    tr {
+        background: #111;
+        margin-bottom: 20px;
+        border-radius: 12px;
+        padding: 15px;
+        border: 1px solid #333;
+        box-sizing: border-box;
+    }
+
+    td {
+        border: none;
+        position: relative;
+        padding-left: 45% !important; /* Espacio para el título de la izquierda */
+        text-align: left;
+        margin-bottom: 12px;
+        font-size: 14px;
+        
+        /* 🚨 ESTO EVITA QUE LAS LETRAS SE SALGAN 🚨 */
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-all; 
+        white-space: normal;
+    }
+
+    /* Ponemos los títulos (Nombre, Correo, etc.) a la izquierda */
+    td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 40%;
+        font-weight: bold;
+        color: #2ecc71;
+        text-transform: uppercase;
+        font-size: 11px;
+    }
+
+    td:last-child {
+        padding-left: 0 !important; /* Quitamos el espacio del label a la izquierda */
+        text-align: center;
+        margin-top: 15px;
+    }
+
+    /* Quitamos el "data-label" para la celda del botón */
+    td:last-child:before {
+        content: none;
+    }
+
+    /* El botón propiamente dicho */
+    .btn-eliminar {
+        display: block;
+        width: 100%; /* Ocupa todo el ancho de la tarjeta */
+        max-width: 200px; /* Para que no sea un bloque gigante si no quieres */
+        margin: 10px auto 0 auto; /* Lo centramos */
+        padding: 12px;
+        box-sizing: border-box; /* 👈 IMPORTANTE: para que el padding no lo estire hacia afuera */
+        position: static; /* Nos aseguramos de que no sea absolute */
+    }
+}

@@ -279,5 +279,65 @@ app.get('/api/stats/:profesorId', (req, res) => {
 
 
 
+// 1. Listar solo los que tengan rol de profesor o administrador
+app.get('/api/profesores-lista', (req, res) => {
+    const sql = `
+        SELECT u.id, u.nombre, u.apellido, u.email, u.rol, u.edad, COUNT(a.id) as total_alumnos 
+        FROM usuarios u 
+        LEFT JOIN alumnos a ON u.id = a.profesor_id 
+        GROUP BY u.id`;
+    
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).send(err);
+        res.json(results);
+    });
+});
+
+// 2. Registrar con el campo ROL
+app.post('/api/registrar-profesor', (req, res) => {
+    // Extraemos todos los datos, incluida la edad
+    const { nombre, apellido, email, password, edad } = req.body;
+
+    // Usamos el rol 'profesor' por defecto
+    const sql = "INSERT INTO usuarios (nombre, apellido, email, password, rol, edad) VALUES (?, ?, ?, ?, 'profesor', ?)";
+
+    db.query(sql, [nombre, apellido, email, password, edad], (err, result) => {
+        if (err) {
+            console.error("Error en MySQL:", err); // Esto imprimirá el error real en tu consola
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ mensaje: "Profesor registrado con éxito" });
+    });
+});
+
+
+
+
+app.delete('/api/eliminar-profesor/:id', (req, res) => {
+    const { id } = req.params;
+    console.log("Intentando eliminar ID:", id); // Mirá tu terminal de VS Code
+
+    const sql = "DELETE FROM usuarios WHERE id = ?"; 
+    // Quitamos temporalmente el 'AND rol = profesor' para probar
+
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            console.error("Error en MySQL:", err);
+            return res.status(500).send(err);
+        }
+        
+        if (result.affectedRows === 0) {
+            console.log("No se encontró ningún registro con ese ID");
+            return res.status(404).json({ mensaje: "No se encontró el profesor" });
+        }
+
+        console.log("Registro eliminado correctamente");
+        res.json({ mensaje: "Profesor eliminado correctamente" });
+    });
+});
+
+
+
+
 
 app.listen(3000, () => console.log('🚀 Servidor en http://localhost:3000'));
