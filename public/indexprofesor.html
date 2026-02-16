@@ -206,8 +206,39 @@ async function eliminarProfesor(id) {
 
 
 
+document.addEventListener('DOMContentLoaded', () => {
+    const profesorId = localStorage.getItem('usuarioId'); 
+    const servidor = "http://localhost:3000"; // Definimos la base aquí
 
+    if (profesorId && profesorId !== 'undefined') {
+        // Usamos la URL absoluta para evitar que el navegador use el puerto 5500 por error
+        fetch(`${servidor}/api/estadisticas/${profesorId}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Error en servidor");
+                return res.json();
+            })
+            .then(data => {
+                console.log("¡Éxito! Datos recibidos:", data);
+                
+                // Mapeamos a tus IDs de HTML
+                const sociosElem = document.getElementById('totalSocios');
+                const rutinasElem = document.getElementById('totalRutinas');
 
+                if (sociosElem) sociosElem.innerText = data.total || 0;
+                if (rutinasElem) rutinasElem.innerText = data.rutinas || 0;
+            })
+            .catch(err => {
+                console.error("Error en el fetch al 3000:", err);
+            });
+    } else {
+        console.error("No hay profesorId válido en localStorage");
+    }
+
+    // Eliminamos cualquier rastro de cargarStaff() que rompa el código
+    if (typeof cargarProfesores === "function") {
+        cargarProfesores();
+    }
+});
 
 
 
@@ -225,24 +256,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('nombreProfe').textContent = usuarioLogueado.nombre;
 
     // 3. Cargar estadísticas reales desde el servidor
-    try {
-        const respuesta = await fetch(`/api/estadisticas/${usuarioLogueado.id}`);
+// 3. Cargar estadísticas reales desde el servidor
+try {
+        const respuesta = await fetch(`http://localhost:3000/api/estadisticas/${usuarioLogueado.id}`);
         const stats = await respuesta.json();
 
-        // Actualizar los números en las tarjetas
-        document.getElementById('totalSocios').textContent = stats.totalAlumnos;
-        document.getElementById('totalRutinas').textContent = stats.totalRutinas;
-        document.getElementById('totalCuotasOk').textContent = stats.cuotasAlDia;
-        document.getElementById('totalVencidas').textContent = stats.cuotasVencidas;
-        
-    } catch (error) {
-        console.error("Error al cargar estadísticas:", error);
-    }
-    
-    // Aquí también podrías llamar a la función para cargar la tabla de profesores staff
-    cargarStaff();
-});
+        // Esta línea es la que manda el mensaje a tu consola
+        console.log("¡Ahora sí! Datos actualizados:", stats); 
 
+        // 1. Buscamos los elementos por su ID
+        const sociosElem = document.getElementById('totalSocios');
+        const rutinasElem = document.getElementById('totalRutinas');
+
+        // 2. Les asignamos el valor usando los nombres EXACTOS de tu consola
+        if (sociosElem) {
+            sociosElem.textContent = stats.totalSocios; // Antes quizás decía totalAlumnos
+        }
+        
+        if (rutinasElem) {
+            rutinasElem.textContent = stats.totalRutinas; // Antes quizás decía rutinas o activos
+        }
+
+    } catch (error) {
+        console.error("Error al mostrar datos:", error);
+    }
+}); // <--- ESTA LLAVE CIERRA EL DOMContentLoaded. ¡ASEGÚRATE DE QUE ESTÉ!
 
 
 
@@ -251,14 +289,20 @@ async function cargarEstadisticas() {
     if (!miSesion) return;
 
     try {
-        const respuesta = await fetch(`http://localhost:3000/api/stats/${miSesion.id}`);
+        // Asegurate de que la URL sea la misma que usamos antes (api/estadisticas)
+        const respuesta = await fetch(`http://localhost:3000/api/estadisticas/${miSesion.id}`);
         const data = await respuesta.json();
 
-        // Usamos los IDs que tenés en tu HTML (image_85d61f.png)
-        document.getElementById('totalSocios').textContent = data.socios ?? 0;
-        document.getElementById('totalRutinas').textContent = data.rutinas ?? 0;
-        document.getElementById('totalCuotasOk').textContent = data.cuotas ?? 0;
-        document.getElementById('totalVencidas').textContent = data.vencidas ?? 0;
+        // CAMBIO CLAVE: Usamos los nombres que ves en tu consola (image_999c27.png)
+        const sociosElem = document.getElementById('totalSocios');
+        const rutinasElem = document.getElementById('totalRutinas');
+
+        if (sociosElem) sociosElem.textContent = data.totalSocios ?? 0;
+        if (rutinasElem) rutinasElem.textContent = data.totalRutinas ?? 0;
+        
+        // Estos de abajo podés dejarlos así o ajustarlos cuando el server los envíe
+        document.getElementById('totalCuotasOk').textContent = data.totalCuotasOk ?? 0;
+        document.getElementById('totalVencidas').textContent = data.totalVencidas ?? 0;
 
     } catch (error) {
         console.error("Error:", error);

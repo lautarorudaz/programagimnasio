@@ -92,21 +92,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const claseEstado = alumno.estado == 1 ? 'status-al-dia' : 'status-pendiente';
 
                 tr.innerHTML = `
-                    <td data-label="ALUMNO">${alumno.nombre} ${alumno.apellido}</td>
-                    <td data-label="ÚLTIMA ACTUALIZACIÓN">${fechaAMostrar}</td>
-                    <td data-label="ESTADO"><span class="status ${claseEstado}">${textoEstado}</span></td>
-                    <td data-label="ACCIONES" class="td-acciones">
-                        <div class="botones-container">
-                            <button class="btn-rutina btn-ver" onclick="verRutina(${alumno.id})">Ver</button>
-                            <button class="btn-rutina btn-editar" onclick="editarRutina(${alumno.id})">Editar</button>
-                            <button class="btn-rutina btn-borrar" onclick="borrarRutina(${alumno.id})">Borrar</button>
-                        </div>
-                    </td>
-                `;
+            <td data-label="ALUMNO">${alumno.nombre} ${alumno.apellido}</td>
+            <td data-label="ÚLTIMA ACTUALIZACIÓN">${fechaAMostrar}</td>
+            <td data-label="ESTADO"><span class="status ${claseEstado}">${textoEstado}</span></td>
+            <td data-label="ACCIONES" class="td-acciones">
+            <div class="botones-container">
+            <button class="btn-rutina btn-agregar" onclick="abrirModalAgregar(${alumno.id}, '${alumno.nombre} ${alumno.apellido}')">Agregar</button>
+            <button class="btn-rutina btn-ver" onclick="verRutina(${alumno.id})">Ver</button>
+            <button class="btn-rutina btn-editar" onclick="editarRutina(${alumno.id})">Editar</button>
+            <button class="btn-rutina btn-borrar" onclick="borrarRutina(${alumno.id})">Borrar</button>
+        </div>
+    </td>
+`;
                 tbody.appendChild(tr);
             });
         });
 });
+
+
+
+
+
+
 
 // --- AJUSTE DE ESTILOS PARA EL CENTRADO PERFECTO ---
 const styleCustom = document.createElement('style');
@@ -142,8 +149,215 @@ document.head.appendChild(styleCustom);
 
 
 
+
+
+let ejerciciosTemporales = [];
+
+// Función para abrir el modal (Corregida para evitar el error de la imagen 96d70f)
+function abrirModalAgregar(id, nombreCompleto) {
+    const spanNombre = document.getElementById('modalAlumnoNombre');
+    const inputId = document.getElementById('modalAlumnoId');
+    const modal = document.getElementById('modalRutina');
+
+    if (spanNombre && inputId && modal) {
+        spanNombre.innerText = nombreCompleto;
+        inputId.value = id;
+        modal.style.display = 'flex';
+        ejerciciosTemporales = []; // Limpiamos lista previa
+        renderizarListaEjercicios();
+    } else {
+        console.error("Error: No se encontraron los elementos del modal en el HTML.");
+    }
+}
+
+function agregarEjercicioALista() {
+    const nombre = document.getElementById('inputEjercicio').value;
+    const series = document.getElementById('inputSeries').value;
+    const reps = document.getElementById('inputReps').value;
+    const obs = document.getElementById('inputObs').value;
+
+    if (!nombre || !series || !reps) {
+        alert("Completá Ejercicio, Series y Repeticiones.");
+        return;
+    }
+
+    ejerciciosTemporales.push({ nombre, series, reps, obs });
+    
+    // Limpiar inputs
+    document.getElementById('inputEjercicio').value = '';
+    document.getElementById('inputSeries').value = '';
+    document.getElementById('inputReps').value = '';
+    document.getElementById('inputObs').value = '';
+
+    renderizarListaEjercicios();
+}
+
+function renderizarListaEjercicios() {
+    const lista = document.getElementById('listaEjerciciosAgregados');
+    lista.innerHTML = ejerciciosTemporales.length === 0 ? 
+        '<p style="color:gray; text-align:center;">No hay ejercicios agregados aún.</p>' : '';
+
+    ejerciciosTemporales.forEach((ej, index) => {
+        lista.innerHTML += `
+            <div class="ejercicio-item">
+                <span><strong>${ej.nombre}</strong> - ${ej.series}x${ej.reps} <small>(${ej.obs})</small></span>
+                <button onclick="eliminarEjercicio(${index})" class="btn-borrar-mini">&times;</button>
+            </div>
+        `;
+    });
+}
+
+function cerrarModal() {
+    document.getElementById('modalRutina').style.display = 'none';
+}
+
+
+function guardarRutinaCompleta() {
+    const alumnoId = document.getElementById('modalAlumnoId').value;
+    const nombrePlan = document.getElementById('nombrePlan').value;
+    const profesorId = localStorage.getItem('usuarioId'); // Obtenemos el ID del profe
+
+    if (!nombrePlan || ejerciciosTemporales.length === 0) {
+        alert("Por favor, poné un nombre al plan y agregá al menos un ejercicio.");
+        return;
+    }
+
+    const datosARemitiir = {
+        alumnoId: alumnoId,
+        profesorId: profesorId,
+        nombrePlan: nombrePlan,
+        ejercicios: ejerciciosTemporales
+    };
+
+    fetch('http://localhost:3000/api/guardar-rutina', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datosARemitiir)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert("¡Rutina guardada correctamente!");
+            cerrarModal();
+            location.reload(); // Recargamos para que se vea la "Última Actualización"
+        }
+    })
+    .catch(err => console.error("Error al guardar:", err));
+}
+
+
+
+
+
+function verRutina(alumnoId) {
+    const contenedor = document.getElementById('contenedorEjerciciosVer');
+    const tituloPlan = document.getElementById('verPlanNombre');
+    
+    // 1. LIMPIEZA INICIAL: Así evitamos que aparezca el nombre del alumno anterior
+    tituloPlan.innerText = 'Cargando rutina...'; 
+    contenedor.innerHTML = '<p style="text-align:center;">Buscando ejercicios en la base de datos...</p>';
+    
+    document.getElementById('modalVerRutina').style.display = 'flex';
+
+    fetch(`http://localhost:3000/api/ver-rutina/${alumnoId}`)
+        .then(res => res.json())
+        .then(data => {
+            // 2. Si no hay datos, personalizamos el título y el mensaje
+            if (!data || data.length === 0) {
+                tituloPlan.innerText = 'Sin Rutina Actual';
+                contenedor.innerHTML = `
+                    <div style="text-align:center; padding: 20px;">
+                        <p style="color:gray;">Este alumno aún no tiene ejercicios cargados.</p>
+                        <p style="font-size: 0.8em; color: #444;">Haga clic en "Agregar" para crear una.</p>
+                    </div>`;
+                return;
+            }
+
+            // 3. Si hay datos, ponemos el nombre real del plan
+            tituloPlan.innerText = `Plan: ${data[0].nombre_plan}`;
+            contenedor.innerHTML = ''; 
+
+            data.forEach(ej => {
+                contenedor.innerHTML += `
+                    <div class="ejercicio-card">
+                        <div class="ej-principal">
+                            <span class="ej-nombre">${ej.nombre_ejercicio}</span>
+                            <span class="ej-sets">${ej.series} x ${ej.repeticiones}</span>
+                        </div>
+                        <div class="ej-obs">${ej.observaciones ? ej.observaciones : 'Sin observaciones'}</div>
+                    </div>
+                `;
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            tituloPlan.innerText = 'Error';
+            contenedor.innerHTML = '<p style="color:red; text-align:center;">Error al conectar con el servidor.</p>';
+        });
+}
+
+function cerrarModalVer() {
+    document.getElementById('modalVerRutina').style.display = 'none';
+}
+
+
 </script>
 
+<div id="modalRutina" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Nueva Rutina: <span id="modalAlumnoNombre" style="color: #2447ff;"></span></h3>
+            <button class="close-btn" onclick="cerrarModal()">&times;</button>
+        </div>
+        
+        <input type="hidden" id="modalAlumnoId">
+
+        <div class="modal-body">
+            <div class="grupo-input">
+                <label>Nombre del Plan</label>
+                <input type="text" id="nombrePlan" placeholder="Ej: Rutina A - Pecho">
+            </div>
+
+            <div class="cargador-ejercicios">
+                <div class="fila">
+                    <input type="text" id="inputEjercicio" placeholder="Nombre del Ejercicio">
+                </div>
+                <div class="fila grid-2">
+                    <input type="number" id="inputSeries" placeholder="Series">
+                    <input type="text" id="inputReps" placeholder="Repeticiones">
+                </div>
+                <div class="fila grid-obs">
+                    <input type="text" id="inputObs" placeholder="Observaciones / Descanso">
+                    <button type="button" class="btn-añadir-item" onclick="agregarEjercicioALista()">+</button>
+                </div>
+            </div>
+
+            <div id="listaEjerciciosAgregados" class="lista-previsualizacion"></div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+            <button class="btn-guardar" onclick="guardarRutinaCompleta()">Finalizar y Guardar</button>
+        </div>
+    </div>
+</div>
+
+
+<div id="modalVerRutina" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3 id="verPlanNombre">Detalles de la Rutina</h3>
+            <button class="close-btn" onclick="cerrarModalVer()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="contenedorEjerciciosVer" class="lista-ejercicios-ver">
+                </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancelar" onclick="cerrarModalVer()">Cerrar</button>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

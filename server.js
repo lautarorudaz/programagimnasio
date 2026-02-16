@@ -181,20 +181,7 @@ app.delete('/borrar-rutina/:id', (req, res) => {
 
 
 
-app.get('/api/estadisticas/:profesorId', (req, res) => {
-    const { profesorId } = req.params;
-    const sql = `
-        SELECT 
-            COUNT(*) as total,
-            SUM(CASE WHEN estado = 1 THEN 1 ELSE 0 END) as activos,
-            SUM(CASE WHEN estado = 0 THEN 1 ELSE 0 END) as inactivos
-        FROM alumnos WHERE profesor_id = ?`;
 
-    db.query(sql, [profesorId], (err, result) => {
-        if (err) return res.status(500).json(err);
-        res.json(result[0]);
-    });
-});
 
 
 
@@ -339,10 +326,22 @@ app.delete('/api/eliminar-profesor/:id', (req, res) => {
 
 app.get('/api/rutinas/:profesorId', (req, res) => {
     const id = req.params.profesorId;
-    
-    // Usamos 'profesor_id' porque así figura en tu tabla alumnos
-    const query = "SELECT id, nombre, apellido, fecha_alta, estado FROM alumnos WHERE profesor_id = ?";
-    
+
+    // Usamos LEFT JOIN para traer la fecha de la rutina más reciente si existe
+    const query = `
+        SELECT 
+            a.id, 
+            a.nombre, 
+            a.apellido, 
+            a.fecha_alta, 
+            a.estado,
+            MAX(r.fecha_creacion) AS ultima_rutina_fecha
+        FROM alumnos a
+        LEFT JOIN rutinas_header r ON a.id = r.alumno_id
+        WHERE a.profesor_id = ?
+        GROUP BY a.id
+    `;
+
     db.query(query, [id], (err, results) => {
         if (err) {
             console.error("Error SQL:", err);
@@ -354,7 +353,71 @@ app.get('/api/rutinas/:profesorId', (req, res) => {
 
 
 
+app.post('/api/guardar-rutina', (req, res) => {
+    const { alumnoId, profesorId, nombrePlan, ejercicios } = req.body;
 
+    // 1. Insertamos el encabezado de la rutina
+    const queryHeader = 'INSERT INTO rutinas_header (alumno_id, profesor_id, nombre_plan) VALUES (?, ?, ?)';
+    
+    db.query(queryHeader, [alumnoId, profesorId, nombrePlan], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        const rutinaId = result.insertId;
+
+        // 2. Insertamos todos los ejercicios en masa
+        const valoresEjercicios = ejercicios.map(ej => [
+            rutinaId, ej.nombre, ej.series, ej.reps, ej.obs
+        ]);
+
+        const queryEjercicios = 'INSERT INTO rutina_ejercicios (rutina_id, nombre_ejercicio, series, repeticiones, observaciones) VALUES ?';
+        
+        db.query(queryEjercicios, [valoresEjercicios], (err) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ success: true, message: "Rutina guardada con éxito" });
+        });
+    });
+});
+
+
+app.get('/api/ver-rutina/:alumnoId', (req, res) => {
+    const alumnoId = req.params.alumnoId;
+
+    // Buscamos la rutina más reciente y sus ejercicios asociados
+    const sql = `
+        SELECT r.nombre_plan, e.nombre_ejercicio, e.series, e.repeticiones, e.observaciones
+        FROM rutinas_header r
+        JOIN rutina_ejercicios e ON r.id = e.rutina_id
+        WHERE r.alumno_id = ?
+        ORDER BY r.fecha_creacion DESC
+    `;
+
+    db.query(sql, [alumnoId], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+
+
+app.get('/api/estadisticas/:profesorId', (req, res) => {
+    const profeId = req.params.profesorId;
+    console.log("Petición recibida para Profe ID:", profeId);
+
+    // Esta consulta es infalible para contar ambas tablas
+    const sql = `
+        SELECT 
+            (SELECT COUNT(*) FROM alumnos WHERE profesor_id = ?) AS totalSocios,
+            (SELECT COUNT(*) FROM rutinas_header WHERE profesor_id = ?) AS totalRutinas
+    `;
+
+    db.query(sql, [profeId, profeId], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        // Log para ver en la terminal de VS Code qué sale de la base de datos
+        console.log("Resultado SQL:", results[0]); 
+        res.json(results[0]);
+    });
+});
 
 
 app.listen(3000, () => console.log('🚀 Servidor en http://localhost:3000'));
