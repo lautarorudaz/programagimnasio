@@ -337,6 +337,23 @@ app.delete('/api/eliminar-profesor/:id', (req, res) => {
 });
 
 
+app.get('/api/rutinas/:profesorId', (req, res) => {
+    const id = req.params.profesorId;
+    
+    // Usamos 'profesor_id' porque así figura en tu tabla alumnos
+    const query = "SELECT id, nombre, apellido, fecha_alta, estado FROM alumnos WHERE profesor_id = ?";
+    
+    db.query(query, [id], (err, results) => {
+        if (err) {
+            console.error("Error SQL:", err);
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(results);
+    });
+});
+
+
+
 
 
 

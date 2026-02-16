@@ -1,4 +1,33 @@
-<main class="container">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/public/css/rutinas.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo-container">
+        <a href="indexprofesor.html" class="logo-text">Anima App</a>
+    </div>
+
+    <div class="menu-toggle" id="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+
+    <ul class="nav-links">
+        <li><a href="/public/indexprofesor.html">Inicio</a></li>
+        <li><a href="/public/alumno.html">Alumnos</a></li>
+        <li><a href="/public/rutina.html" class="active">Rutinas</a></li>
+        <li><button class="btn-cerrar-sesion" onclick="cerrarSesion()">Cerrar Sesión</button></li>
+    </ul>
+</nav>
+
+<main>
     <header class="header-section">
         <h1>Gestión de Rutinas</h1>
         <p>Seleccioná un alumno para asignar o editar su plan de entrenamiento.</p>
@@ -23,3 +52,128 @@
         </table>
     </div>
 </main>
+
+
+<script>
+    document.getElementById('mobile-menu').addEventListener('click', function() {
+    const navLinks = document.querySelector('.nav-links');
+    navLinks.classList.toggle('active');
+    
+    // Opcional: animación simple de las barras
+    this.classList.toggle('is-active');
+});
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const profeId = localStorage.getItem('usuarioId'); 
+    
+    if (!profeId) return;
+
+    fetch(`http://localhost:3000/api/rutinas/${profeId}`)
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('listaAlumnosRutinas');
+            tbody.innerHTML = '';
+
+            data.forEach(alumno => {
+                const tr = document.createElement('tr');
+                
+                // Lógica de fecha: Si no hay fecha de rutina, mostramos el mensaje
+                let fechaAMostrar = "Sin rutina asignada";
+                
+                // IMPORTANTE: Aquí usa el nombre de la columna de tu DB que guarda la fecha de la RUTINA
+                if (alumno.ultima_rutina_fecha) { 
+                    const soloFecha = alumno.ultima_rutina_fecha.substring(0, 10);
+                    const [year, month, day] = soloFecha.split('-');
+                    fechaAMostrar = `${day}/${month}/${year}`;
+                }
+
+                const textoEstado = alumno.estado == 1 ? 'Activo' : 'Pendiente';
+                const claseEstado = alumno.estado == 1 ? 'status-al-dia' : 'status-pendiente';
+
+                tr.innerHTML = `
+                    <td data-label="ALUMNO">${alumno.nombre} ${alumno.apellido}</td>
+                    <td data-label="ÚLTIMA ACTUALIZACIÓN">${fechaAMostrar}</td>
+                    <td data-label="ESTADO"><span class="status ${claseEstado}">${textoEstado}</span></td>
+                    <td data-label="ACCIONES" class="td-acciones">
+                        <div class="botones-container">
+                            <button class="btn-rutina btn-ver" onclick="verRutina(${alumno.id})">Ver</button>
+                            <button class="btn-rutina btn-editar" onclick="editarRutina(${alumno.id})">Editar</button>
+                            <button class="btn-rutina btn-borrar" onclick="borrarRutina(${alumno.id})">Borrar</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+});
+
+// --- AJUSTE DE ESTILOS PARA EL CENTRADO PERFECTO ---
+const styleCustom = document.createElement('style');
+styleCustom.innerHTML = `
+    /* Centra el texto del encabezado azul */
+    th:last-child {
+        text-align: center !important;
+    }
+
+    /* Centra el contenedor de botones en la celda */
+    .td-acciones {
+        text-align: center !important;
+        vertical-align: middle;
+    }
+
+    .botones-container {
+        display: inline-flex; /* Cambiado a inline-flex para respetar el text-align center */
+        gap: 8px;
+        justify-content: center;
+        width: 100%;
+    }
+
+    /* Ajuste para que no se peguen en mobile */
+    @media (max-width: 768px) {
+        .botones-container {
+            flex-direction: column;
+            align-items: center;
+        }
+        .btn-rutina { width: 100%; max-width: 200px; }
+    }
+`;
+document.head.appendChild(styleCustom);
+
+
+
+</script>
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
