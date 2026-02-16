@@ -331,3 +331,63 @@ tr:hover {
         gap: 15px;
     }
 }
+
+
+
+@media (max-width: 768px) {
+    /* 1. Contenedor del Modal */
+    .modal-content {
+        width: 92% !important; /* Deja un margen pequeño a los lados */
+        max-width: 400px !important;
+        margin: 10% auto !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
+        border-radius: 12px;
+        position: relative;
+    }
+
+    /* 2. Ajuste de Títulos y Etiquetas */
+    .modal-content h2 {
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+    }
+
+    .modal-content label {
+        font-size: 0.8rem;
+        margin-top: 10px;
+        display: block;
+    }
+
+    /* 3. Inputs (Forzamos a que no se salgan) */
+    .modal-content input, 
+    .modal-content select {
+        width: 100% !important;
+        box-sizing: border-box !important; /* Crucial para que el padding no rompa el ancho */
+        padding: 12px !important;
+        margin-bottom: 10px !important;
+        font-size: 16px; /* Evita zoom molesto en móviles */
+    }
+
+    /* 4. Botones (Guardar y Cancelar) */
+    /* Los ponemos uno arriba del otro para que no se pisen */
+    .modal-footer {
+        display: flex;
+        flex-direction: column; 
+        gap: 10px;
+        width: 100%;
+    }
+
+    .btn-guardar-alumno {
+        width: 100% !important;
+        padding: 12px !important;
+        order: 1; /* El de guardar primero */
+    }
+
+    .btn-cancelar {
+        width: 100% !important;
+        background: transparent !important;
+        border: 1px solid #555 !important;
+        padding: 10px !important;
+        order: 2; /* El de cancelar abajo */
+    }
+}

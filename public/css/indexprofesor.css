@@ -10,6 +10,7 @@
 
 body {
     margin: 0;
+    overflow-x: hidden;
     background-color: var(--bg-dark);
     color: var(--text-white);
     font-family: 'Inter', sans-serif;
@@ -408,5 +409,60 @@ tr:hover { background: #252525; }
         padding: 12px;
         box-sizing: border-box; /* 👈 IMPORTANTE: para que el padding no lo estire hacia afuera */
         position: static; /* Nos aseguramos de que no sea absolute */
+    }
+}
+
+
+
+@media (max-width: 768px) {
+    /* 1. Eliminamos el scroll lateral de toda la pantalla */
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+        position: relative;
+    }
+
+    /* 2. Forzamos al contenedor principal a centrarse */
+    .modal {
+        display: none; 
+        padding: 10px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 3. RESET TOTAL de la caja blanca/oscura */
+    .modal-content {
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+        transform: none !important;
+        width: 95% !important; /* Forzamos ancho relativo */
+        max-width: 380px !important; /* Límite para que no sea gigante */
+        margin: 20px auto !important; /* Centrado horizontal automático */
+        padding: 20px !important;
+        box-sizing: border-box !important;
+        display: block !important;
+    }
+
+    /* 4. Forzamos a que el formulario no empuje las paredes */
+    #formNuevoProfe {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* 5. Los inputs deben ser sumisos al ancho del padre */
+    #formNuevoProfe input {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important; /* El padding no suma ancho */
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* 6. El botón verde */
+    .btn-guardar-profe {
+        width: 100% !important;
+        margin-left: 0 !important;
+        box-sizing: border-box !important;
     }
 }
