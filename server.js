@@ -379,23 +379,8 @@ app.post('/api/guardar-rutina', (req, res) => {
 });
 
 
-app.get('/api/ver-rutina/:alumnoId', (req, res) => {
-    const alumnoId = req.params.alumnoId;
 
-    // Buscamos la rutina más reciente y sus ejercicios asociados
-    const sql = `
-        SELECT r.nombre_plan, e.nombre_ejercicio, e.series, e.repeticiones, e.observaciones
-        FROM rutinas_header r
-        JOIN rutina_ejercicios e ON r.id = e.rutina_id
-        WHERE r.alumno_id = ?
-        ORDER BY r.fecha_creacion DESC
-    `;
 
-    db.query(sql, [alumnoId], (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(results);
-    });
-});
 
 
 
@@ -418,6 +403,95 @@ app.get('/api/estadisticas/:profesorId', (req, res) => {
         res.json(results[0]);
     });
 });
+
+
+
+
+// Obtener un ejercicio específico para editar
+app.get('/api/ejercicio/:id', (req, res) => {
+    const ejercicioId = req.params.id;
+    const sql = `SELECT * FROM rutina_ejercicios WHERE id = ?`;
+
+    db.query(sql, [ejercicioId], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json(result[0]); // Enviamos solo el objeto del ejercicio
+    });
+});
+
+
+
+app.get('/api/ver-rutina/:id', (req, res) => {
+    const alumnoId = req.params.id;
+    const sql = `
+        SELECT re.id, re.nombre_ejercicio, re.series, re.repeticiones, re.observaciones 
+        FROM rutinas_header h
+        JOIN rutina_ejercicios re ON h.id = re.rutina_id
+        WHERE h.alumno_id = ?`;
+
+    db.query(sql, [alumnoId], (err, results) => {
+        if (err) return res.status(500).json(err);
+        res.json(results);
+    });
+});
+
+
+
+
+
+
+// 2. RUTA PARA GUARDAR LOS CAMBIOS (Update en rutina_ejercicios)
+app.put('/api/actualizar-ejercicio/:id', (req, res) => {
+    const idEjercicio = req.params.id;
+    const { nombre_ejercicio, series, repeticiones, observaciones } = req.body;
+    
+    const sql = `UPDATE rutina_ejercicios SET nombre_ejercicio = ?, series = ?, repeticiones = ?, observaciones = ? WHERE id = ?`;
+
+    db.query(sql, [nombre_ejercicio, series, repeticiones, observaciones, idEjercicio], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json({ message: "Actualizado" });
+    });
+});
+
+
+
+// Obtener todos los planes (headers) de un alumno
+app.get('/api/planes-alumno/:id', (req, res) => {
+    const sql = `SELECT id, nombre_plan FROM rutinas_header WHERE alumno_id = ?`;
+    db.query(sql, [req.params.id], (err, results) => {
+        if (err) return res.status(500).json(err);
+        res.json(results);
+    });
+});
+
+// Obtener ejercicios de un plan específico
+app.get('/api/ejercicios-plan/:planId', (req, res) => {
+    const sql = `SELECT * FROM rutina_ejercicios WHERE rutina_id = ?`;
+    db.query(sql, [req.params.planId], (err, results) => {
+        if (err) return res.status(500).json(err);
+        res.json(results);
+    });
+});
+
+
+// RUTA PARA ELIMINAR UN PLAN COMPLETO
+app.delete('/api/eliminar-plan/:id', (req, res) => {
+    const planId = req.params.id;
+
+    // Primero borramos los ejercicios asociados a ese plan
+    const sqlEjercicios = `DELETE FROM rutina_ejercicios WHERE rutina_id = ?`;
+    
+    db.query(sqlEjercicios, [planId], (err, result) => {
+        if (err) return res.status(500).json({ error: "Error al borrar ejercicios" });
+
+        // Una vez borrados los ejercicios, borramos el header del plan
+        const sqlHeader = `DELETE FROM rutinas_header WHERE id = ?`;
+        db.query(sqlHeader, [planId], (err, result) => {
+            if (err) return res.status(500).json({ error: "Error al borrar el plan" });
+            res.json({ message: "Plan eliminado correctamente" });
+        });
+    });
+});
+
 
 
 app.listen(3000, () => console.log('🚀 Servidor en http://localhost:3000'));

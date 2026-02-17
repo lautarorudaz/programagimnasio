@@ -430,3 +430,200 @@ tr:hover {
     color: #aaa;
     font-style: italic;
 }
+
+
+.modal-content {
+    background: #1a1a1a; padding: 20px; border-radius: 8px;
+    width: 90%; max-width: 400px; color: white;
+}
+.modal-content input, .modal-content textarea {
+    width: 100%; margin-bottom: 10px; padding: 8px;
+    background: #333; border: 1px solid #444; color: white;
+}
+.modal-buttons { display: flex; gap: 10px; }
+.btn-guardar { background: #28a745; color: white; border: none; padding: 10px; flex: 1; cursor: pointer; }
+.btn-cancelar { background: #dc3545; color: white; border: none; padding: 10px; flex: 1; cursor: pointer; }
+
+/* Esto es vital para que empiece invisible */
+#modalEdicionUnico {
+    display: none !important;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-edicion-unico {
+    display: none !important; /* Fuerza el cierre inicial */
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 10000; /* Por encima de todo */
+    justify-content: center;
+    align-items: center;
+}
+
+
+
+/* El contenedor oscuro que cubre toda la pantalla */
+.modal-overlay, .modal-ver-rutina, .modal-edicion-unico {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Fondo oscuro semitransparente */
+    display: none; /* Se cambia a flex desde JS */
+    justify-content: center; /* Centrado horizontal */
+    align-items: center;     /* Centrado vertical */
+    z-index: 1000;          /* Por encima de todo */
+}
+
+/* La tarjeta blanca/oscura del modal */
+.modal-content {
+    background-color: #1a1a1a; /* O el color de tu tema */
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px; /* Tamaño máximo */
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+    max-height: 85vh; /* Evita que se salga de la pantalla si hay muchos ejercicios */
+    overflow-y: auto; /* Permite scroll interno si es muy largo */
+    position: relative;
+}
+
+
+.modal-overlay, .modal-ver-rutina, .modal-edicion-unico {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85); /* Un poco más oscuro para resaltar el modal */
+    backdrop-filter: blur(4px); /* Efecto de desenfoque al fondo */
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    transition: all 0.3s ease;
+}
+
+/* Tarjeta del Modal */
+.modal-content {
+    background-color: #1e1e1e; /* Fondo gris oscuro premium */
+    color: #f0f0f0;
+    padding: 30px;
+    border-radius: 16px; /* Bordes más redondeados */
+    width: 95%;
+    max-width: 550px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    border: 1px solid #333; /* Sutil borde para definir la forma */
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content h3 {
+    font-family: 'Poppins', sans-serif; /* Si podés, cargá esta fuente de Google Fonts */
+    font-size: 1.6rem;
+    margin-bottom: 20px;
+    color: #4d94ff; /* Azul vibrante para el título */
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #bbb;
+    margin-top: 15px;
+}
+
+input[type="text"], 
+input[type="number"], 
+select, 
+textarea {
+    width: 100%;
+    padding: 12px 15px;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    outline: none;
+    box-sizing: border-box; /* Fundamental para que no se desborden */
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #4d94ff;
+    box-shadow: 0 0 8px rgba(77, 148, 255, 0.3);
+}
+
+/* Espaciado para la fila de Series y Reps */
+.modal-grid-row {
+    display: flex;
+    gap: 20px; /* Mayor separación entre cuadros */
+    margin-bottom: 10px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.btn-guardar, .btn-actualizar {
+    flex: 2;
+    background: linear-gradient(135deg, #28a745, #218838);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.3s;
+}
+
+.btn-cancelar {
+    flex: 1;
+    background: #444;
+    color: #ccc;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-guardar:hover {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    transform: translateY(-2px);
+}
+
+.btn-cancelar:hover {
+    background: #555;
+    color: white;
+}
+
+
+.btn-borrar {
+    background: linear-gradient(135deg, #ff4d4d, #cc0000);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.3s;
+}
+
+.btn-borrar:hover {
+    background: linear-gradient(135deg, #ff6666, #e60000);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4);
+}

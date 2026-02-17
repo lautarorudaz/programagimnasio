@@ -249,55 +249,395 @@ function guardarRutinaCompleta() {
 
 
 
-function verRutina(alumnoId) {
+let ejerciciosConsulta = [];
+
+async function verRutina(idAlumno) {
+    const modal = document.getElementById('modalVerRutina');
+    const selectPlanes = document.getElementById('selectorPlanesVer');
     const contenedor = document.getElementById('contenedorEjerciciosVer');
-    const tituloPlan = document.getElementById('verPlanNombre');
-    
-    // 1. LIMPIEZA INICIAL: Así evitamos que aparezca el nombre del alumno anterior
-    tituloPlan.innerText = 'Cargando rutina...'; 
-    contenedor.innerHTML = '<p style="text-align:center;">Buscando ejercicios en la base de datos...</p>';
-    
-    document.getElementById('modalVerRutina').style.display = 'flex';
 
-    fetch(`http://localhost:3000/api/ver-rutina/${alumnoId}`)
-        .then(res => res.json())
-        .then(data => {
-            // 2. Si no hay datos, personalizamos el título y el mensaje
-            if (!data || data.length === 0) {
-                tituloPlan.innerText = 'Sin Rutina Actual';
-                contenedor.innerHTML = `
-                    <div style="text-align:center; padding: 20px;">
-                        <p style="color:gray;">Este alumno aún no tiene ejercicios cargados.</p>
-                        <p style="font-size: 0.8em; color: #444;">Haga clic en "Agregar" para crear una.</p>
-                    </div>`;
-                return;
-            }
+    try {
+        // 1. Buscamos los Planes (headers) del alumno
+        const res = await fetch(`http://localhost:3000/api/planes-alumno/${idAlumno}`);
+        const planes = await res.json();
 
-            // 3. Si hay datos, ponemos el nombre real del plan
-            tituloPlan.innerText = `Plan: ${data[0].nombre_plan}`;
-            contenedor.innerHTML = ''; 
+        if (planes.length === 0) {
+            alert("El alumno no tiene planes asignados.");
+            return;
+        }
 
-            data.forEach(ej => {
-                contenedor.innerHTML += `
-                    <div class="ejercicio-card">
-                        <div class="ej-principal">
-                            <span class="ej-nombre">${ej.nombre_ejercicio}</span>
-                            <span class="ej-sets">${ej.series} x ${ej.repeticiones}</span>
-                        </div>
-                        <div class="ej-obs">${ej.observaciones ? ej.observaciones : 'Sin observaciones'}</div>
-                    </div>
-                `;
-            });
-        })
-        .catch(err => {
-            console.error(err);
-            tituloPlan.innerText = 'Error';
-            contenedor.innerHTML = '<p style="color:red; text-align:center;">Error al conectar con el servidor.</p>';
+        // 2. Limpiamos el selector y el contenedor
+        selectPlanes.innerHTML = '<option value="">-- Seleccione un Plan --</option>';
+        contenedor.innerHTML = '<p style="text-align: center; color: #888;">Seleccione un plan para ver los detalles.</p>';
+
+        // 3. Llenamos el selector de planes
+        planes.forEach(plan => {
+            const opt = document.createElement('option');
+            opt.value = plan.id;
+            opt.textContent = plan.nombre_plan;
+            selectPlanes.appendChild(opt);
         });
+
+        // 4. Abrimos el modal
+        modal.style.display = 'flex';
+
+    } catch (error) {
+        console.error("Error al cargar planes para ver:", error);
+    }
+}
+
+async function mostrarEjerciciosEnVer() {
+    const planId = document.getElementById('selectorPlanesVer').value;
+    const contenedor = document.getElementById('contenedorEjerciciosVer');
+
+    if (!planId) {
+        contenedor.innerHTML = '<p style="text-align: center; color: #888;">Seleccione un plan para ver los detalles.</p>';
+        return;
+    }
+
+    try {
+        // Buscamos los ejercicios de ese plan
+        const res = await fetch(`http://localhost:3000/api/ejercicios-plan/${planId}`);
+        const ejercicios = await res.json();
+
+        // Limpiamos y generamos la lista
+        contenedor.innerHTML = '';
+
+        if (ejercicios.length === 0) {
+            contenedor.innerHTML = '<p>Este plan no tiene ejercicios cargados.</p>';
+            return;
+        }
+
+        ejercicios.forEach(ej => {
+            const div = document.createElement('div');
+            div.className = 'ejercicio-item-consulta';
+            div.style = "background: #2a2a2a; padding: 10px; margin-bottom: 10px; border-radius: 5px; border-left: 4px solid #007bff;";
+            
+            div.innerHTML = `
+                <h4 style="margin: 0; color: #fff;">${ej.nombre_ejercicio}</h4>
+                <p style="margin: 5px 0; font-size: 0.9em;">
+                    <strong>Series:</strong> ${ej.series} | 
+                    <strong>Repeticiones:</strong> ${ej.repeticiones}
+                </p>
+                <p style="margin: 0; font-size: 0.85em; color: #bbb;">
+                    <em>Obs: ${ej.observaciones || 'Sin observaciones'}</em>
+                </p>
+            `;
+            contenedor.appendChild(div);
+        });
+
+    } catch (error) {
+        console.error("Error al cargar ejercicios:", error);
+        contenedor.innerHTML = '<p>Error al cargar los ejercicios.</p>';
+    }
 }
 
 function cerrarModalVer() {
     document.getElementById('modalVerRutina').style.display = 'none';
+}
+
+
+
+// Al cargar la página, nos aseguramos de que el modal esté oculto
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modalEdicionUnico');
+    if (modal) modal.style.display = 'none';
+    
+    // Llamamos a la función que carga la tabla
+    cargarTablaEjercicios();
+});
+
+// FUNCIÓN PARA CARGAR LA TABLA (Aquí es donde estaba el error de nombre)
+async function cargarTablaEjercicios() {
+    const cuerpoTabla = document.getElementById('cuerpoTablaEjercicios'); // Asegurate que este ID exista en tu HTML
+    if (!cuerpoTabla) return;
+
+    try {
+        const res = await fetch('http://localhost:3000/api/tus-rutinas'); // Cambiá por tu URL real
+        const rutinas = await res.json();
+
+        cuerpoTabla.innerHTML = ''; // Limpiamos la tabla
+
+        rutinas.forEach(rutina => {
+            const tr = document.createElement('tr');
+            // Aquí definimos el botón con el nombre CORRECTO: abrirModalEdicion
+            tr.innerHTML = `
+                <td>${rutina.ejercicio}</td>
+                <td>${rutina.series}</td>
+                <td>${rutina.repeticiones}</td>
+                <td>${rutina.observaciones || ''}</td>
+                <td>
+                    <button class="btn-editar" onclick="abrirModalEdicion(${rutina.id}, '${rutina.ejercicio}', ${rutina.series}, '${rutina.repeticiones}', '${rutina.observaciones}')">
+                        Editar
+                    </button>
+                </td>
+            `;
+            cuerpoTabla.appendChild(tr);
+        });
+    } catch (error) {
+        console.error("Error al cargar la tabla:", error);
+    }
+}
+
+// FUNCIÓN PARA ABRIR EL MODAL (La que el botón busca y no encontraba)
+
+
+
+
+
+
+
+// Esto fuerza que el modal esté oculto apenas carga el script
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modalEdicionUnico');
+    if (modal) modal.style.setProperty('display', 'none', 'important');
+});
+
+
+
+
+
+// 1. SEGURIDAD: Forzar que el modal esté oculto al cargar la página
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modalEdicionUnico');
+    if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+    }
+});
+
+// 2. FUNCIÓN PARA CERRAR EL MODAL (Botón rojo)
+function cerrarModalEdicion() {
+    const modal = document.getElementById('modalEdicionUnico');
+    if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+    }
+}
+
+// 3. FUNCIÓN PARA ABRIR EL MODAL (La que el botón ahora sí va a encontrar)
+async function abrirModalEdicion(idAlumno) {
+    const modal = document.getElementById('modalEdicionUnico');
+    
+    try {
+        const res = await fetch(`http://localhost:3000/api/rutinas/${idAlumno}`);
+        
+        if (!res.ok) throw new Error("La ruta /api/rutinas no responde en el servidor");
+
+        const ejercicios = await res.json();
+
+        if (!ejercicios || ejercicios.length === 0) {
+            alert("Este alumno no tiene ejercicios cargados en su plan.");
+            return;
+        }
+
+        // Cargamos el primer ejercicio encontrado en los campos del modal
+        const ej = ejercicios[0];
+        
+        document.getElementById('editId').value = idAlumno;
+        document.getElementById('editNombre').value = ej.nombre_ejercicio;
+        document.getElementById('editSeries').value = ej.series;
+        document.getElementById('editReps').value = ej.repeticiones;
+        document.getElementById('editObs').value = ej.observaciones;
+
+        // Mostramos el modal
+        modal.style.setProperty('display', 'flex', 'important');
+
+    } catch (error) {
+        console.error("Error:", error);
+        alert("No se pudo obtener la rutina. Revisá la consola.");
+    }
+}
+
+
+
+
+// Función para cerrar (la que pide tu botón "Cerrar")
+function cerrarModalEdicion() {
+    document.getElementById('modalEdicionUnico').style.display = 'none';
+}
+
+
+
+let planesDelAlumno = []; // Para guardar los headers (id, nombre_plan)
+let ejerciciosDelPlanActual = []; // Para guardar los ejercicios del plan elegido
+
+async function editarRutina(idAlumno) {
+    const modal = document.getElementById('modalEdicionUnico');
+    const selectPlanes = document.getElementById('selectorPlanes');
+    
+    try {
+        // Buscamos los Planes (headers) del alumno
+        // Necesitás una ruta que devuelva solo los planes de rutinas_header
+        const res = await fetch(`http://localhost:3000/api/planes-alumno/${idAlumno}`);
+        planesDelAlumno = await res.json();
+
+        if (planesDelAlumno.length === 0) {
+            alert("El alumno no tiene planes creados.");
+            return;
+        }
+
+        // Llenamos el primer selector con los planes (ej: "Fuerza - Jose")
+        selectPlanes.innerHTML = '<option value="">-- Seleccione un Plan --</option>';
+        planesDelAlumno.forEach(plan => {
+            const opt = document.createElement('option');
+            opt.value = plan.id; // El id de rutinas_header
+            opt.textContent = plan.nombre_plan;
+            selectPlanes.appendChild(opt);
+        });
+
+        modal.style.setProperty('display', 'flex', 'important');
+    } catch (error) { console.error("Error:", error); }
+}
+
+
+async function cargarEjerciciosDelPlan() {
+    const planId = document.getElementById('selectorPlanes').value;
+    const selectEj = document.getElementById('selectorEjercicios');
+    
+    if (!planId) {
+        selectEj.disabled = true;
+        return;
+    }
+
+    try {
+        // Ahora buscamos los ejercicios que pertenecen a ESE plan_id
+        const res = await fetch(`http://localhost:3000/api/ejercicios-plan/${planId}`);
+        ejerciciosDelPlanActual = await res.json();
+
+        selectEj.innerHTML = '<option value="">-- Seleccione un Ejercicio --</option>';
+        ejerciciosDelPlanActual.forEach(ej => {
+            const opt = document.createElement('option');
+            opt.value = ej.id; // El id de rutina_ejercicios
+            opt.textContent = ej.nombre_ejercicio;
+            selectEj.appendChild(opt);
+        });
+        
+        selectEj.disabled = false;
+    } catch (error) { console.error(error); }
+}
+
+
+function cargarDatosEjercicioIndividual() {
+    const idSeleccionado = document.getElementById('selectorEjercicios').value;
+    const ej = ejerciciosDelPlanActual.find(i => i.id == idSeleccionado);
+    if (ej) {
+        document.getElementById('editId').value = ej.id;
+        document.getElementById('editNombre').value = ej.nombre_ejercicio;
+        document.getElementById('editSeries').value = ej.series;
+        document.getElementById('editReps').value = ej.repeticiones;
+        document.getElementById('editObs').value = ej.observaciones;
+    }
+}
+
+
+
+
+
+function cargarDatosEjercicioSeleccionado() {
+    const idSeleccionado = document.getElementById('selectorEjercicios').value;
+    
+    // Buscamos los datos en nuestro array local
+    const ej = ejerciciosDelAlumnoActual.find(item => item.id == idSeleccionado);
+
+    if (ej) {
+        document.getElementById('editId').value = ej.id;
+        document.getElementById('editNombre').value = ej.nombre_ejercicio;
+        document.getElementById('editSeries').value = ej.series;
+        document.getElementById('editReps').value = ej.repeticiones;
+        document.getElementById('editObs').value = ej.observaciones;
+    }
+}
+
+
+
+
+async function guardarCambios() {
+    const idEj = document.getElementById('editId').value;
+    
+    const body = {
+        nombre_ejercicio: document.getElementById('editNombre').value,
+        series: document.getElementById('editSeries').value,
+        repeticiones: document.getElementById('editReps').value,
+        observaciones: document.getElementById('editObs').value
+    };
+
+    try {
+        const res = await fetch(`http://localhost:3000/api/actualizar-ejercicio/${idEj}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+            alert("¡Rutina actualizada!");
+            location.reload();
+        } else {
+            alert("Error al guardar.");
+        }
+    } catch (error) {
+        console.error("Error en guardarCambios:", error);
+    }
+}
+
+
+// Abrir el modal y cargar los planes
+async function borrarRutina(idAlumno) {
+    const modal = document.getElementById('modalBorrarPlan');
+    const selector = document.getElementById('selectorPlanesBorrar');
+
+    try {
+        const res = await fetch(`http://localhost:3000/api/planes-alumno/${idAlumno}`);
+        const planes = await res.json();
+
+        if (planes.length === 0) {
+            alert("El alumno no tiene planes para borrar.");
+            return;
+        }
+
+        // Llenamos el selector
+        selector.innerHTML = '<option value="">-- Seleccione un Plan --</option>';
+        planes.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.nombre_plan;
+            selector.appendChild(opt);
+        });
+
+        modal.style.display = 'flex';
+    } catch (error) {
+        console.error("Error al cargar planes:", error);
+    }
+}
+
+// Ejecutar la eliminación
+async function ejecutarBorrado() {
+    const idPlan = document.getElementById('selectorPlanesBorrar').value;
+
+    if (!idPlan) {
+        alert("Por favor, seleccione un plan.");
+        return;
+    }
+
+    if (confirm("¿Estás seguro? Se borrarán todos los ejercicios asociados a este plan.")) {
+        try {
+            const res = await fetch(`http://localhost:3000/api/eliminar-plan/${idPlan}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                alert("Plan eliminado correctamente.");
+                cerrarModalBorrar();
+                // Aquí podrías recargar la tabla de alumnos si fuera necesario
+            } else {
+                alert("Error al eliminar el plan.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+}
+
+function cerrarModalBorrar() {
+    document.getElementById('modalBorrarPlan').style.display = 'none';
 }
 
 
@@ -343,21 +683,87 @@ function cerrarModalVer() {
 </div>
 
 
-<div id="modalVerRutina" class="modal-overlay">
-    <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-            <h3 id="verPlanNombre">Detalles de la Rutina</h3>
-            <button class="close-btn" onclick="cerrarModalVer()">&times;</button>
+<div id="modalVerRutina" class="modal-ver-rutina" style="display: none;">
+    <div class="modal-content">
+        <h3>Consulta de Rutinas</h3>
+        
+        <label>Seleccionar Plan para visualizar:</label>
+        <select id="selectorPlanesVer" onchange="mostrarEjerciciosEnVer()" style="width: 100%; margin-bottom: 20px; padding: 10px; border-radius: 5px;">
+            <option value="">-- Seleccione un Plan --</option>
+        </select>
+
+        <hr>
+
+        <div id="contenedorEjerciciosVer">
+            <p style="text-align: center; color: #888;">Seleccione un plan para ver los detalles.</p>
         </div>
-        <div class="modal-body">
-            <div id="contenedorEjerciciosVer" class="lista-ejercicios-ver">
-                </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-cancelar" onclick="cerrarModalVer()">Cerrar</button>
+
+        <div class="modal-buttons">
+            <button onclick="cerrarModalVer()" class="btn-cancelar">Cerrar</button>
         </div>
     </div>
 </div>
+
+
+<div id="modalEdicionUnico" class="modal-edicion-unico" style="display: none;">
+    <div class="modal-content">
+        <h3>Editar Rutina</h3>
+        
+        <label>1. Seleccionar Plan (Rutina):</label>
+        <select id="selectorPlanes" onchange="cargarEjerciciosDelPlan()" style="width: 100%; margin-bottom: 10px; padding: 8px;">
+            <option value="">-- Seleccione un Plan --</option>
+        </select>
+
+        <label>2. Seleccionar Ejercicio:</label>
+        <select id="selectorEjercicios" onchange="cargarDatosEjercicioIndividual()" style="width: 100%; margin-bottom: 15px; padding: 8px;" disabled>
+            <option value="">-- Primero elija un plan --</option>
+        </select>
+        <hr>
+        
+        <input type="hidden" id="editId">
+        <label>Nombre del Ejercicio:</label>
+        <input type="text" id="editNombre">
+        
+        <div class="modal-grid-row">
+    <div style="flex: 1;">
+        <label>Series:</label>
+        <input type="number" id="editSeries">
+    </div>
+    <div style="flex: 1;">
+        <label>Reps:</label>
+        <input type="text" id="editReps">
+    </div>
+</div>
+        
+        <label>Observaciones:</label>
+        <textarea id="editObs" rows="3"></textarea>
+        
+        <div class="modal-buttons">
+            <button onclick="guardarCambios()" class="btn-guardar">Actualizar</button>
+            <button onclick="cerrarModalEdicion()" class="btn-cancelar">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+
+<div id="modalBorrarPlan" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px;">
+        <h3 style="color: #ff4d4d;">Eliminar Plan</h3>
+        <p style="text-align: center; color: #bbb;">Seleccione el plan que desea eliminar permanentemente:</p>
+        
+        <label>Plan a borrar:</label>
+        <select id="selectorPlanesBorrar" style="border-color: #555; margin-bottom: 20px;">
+            <option value="">-- Seleccione un Plan --</option>
+        </select>
+
+        <div class="modal-buttons">
+            <button onclick="ejecutarBorrado()" class="btn-borrar" style="flex: 2;">Eliminar Plan</button>
+            <button onclick="cerrarModalBorrar()" class="btn-cancelar" style="flex: 1;">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+
 
 </body>
 </html>
