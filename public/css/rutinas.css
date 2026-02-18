@@ -627,3 +627,542 @@ input:focus, select:focus, textarea:focus {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4);
 }
+
+
+
+/* Contenedor de la sección del Título del Plan */
+.plan-header-box {
+    margin-bottom: 25px; 
+    padding: 15px; 
+    background: #252525; 
+    border-radius: 10px; 
+    border: 1px solid #4d94ff; /* Azul para resaltar que es el nombre general */
+}
+
+/* Títulos de secciones internas */
+#seccionEjercicio h4 {
+    color: #f0f0f0;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 8px;
+}
+
+/* Grid para organizar Día y Nombre del Ejercicio en una sola fila */
+.modal-grid-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    align-items: flex-end;
+}
+
+/* Estilo para la lista de previsualización (antes de guardar) */
+#previsualizacionPlan {
+    margin-top: 20px; 
+    background: #1a1a1a;
+    border: 1px dashed #555; 
+    padding: 15px; 
+    border-radius: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* Ítem individual dentro de la lista de previsualización */
+.ejercicio-temp-item {
+    background: #333;
+    margin-bottom: 8px;
+    padding: 10px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 3px solid #4d94ff;
+}
+
+.ejercicio-temp-item span {
+    font-size: 0.9rem;
+    color: #eee;
+}
+
+.ejercicio-temp-item .dia-tag {
+    background: #4d94ff;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+
+
+
+/* Barra de scroll estética */
+.scroll-estetico {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    padding: 15px;
+    border-radius: 10px;
+    max-height: 250px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.scroll-estetico::-webkit-scrollbar {
+    width: 6px;
+}
+.scroll-estetico::-webkit-scrollbar-track {
+    background: #111;
+}
+.scroll-estetico::-webkit-scrollbar-thumb {
+    background: #4d94ff;
+    border-radius: 10px;
+}
+
+/* Espaciado de grupos de días */
+.grupo-dia {
+    margin-bottom: 15px;
+    border-left: 3px solid #4d94ff;
+    padding-left: 10px;
+}
+
+.titulo-dia-lista {
+    color: #4d94ff;
+    font-size: 0.9em;
+    font-weight: bold;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.form-carga-ejercicio {
+    background: #222;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+
+
+/* Contenedores y Filas */
+.modal-row-full { width: 100%; }
+.modal-grid-3-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.5fr;
+    gap: 10px;
+}
+
+/* Selector de día destacado */
+.select-dia-grande {
+    width: 100%;
+    padding: 12px;
+    background: #2a2a2a;
+    border: 1px solid #4d94ff; /* Borde azul para resaltar */
+    color: white;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+.label-sutil {
+    display: block;
+    color: #888;
+    font-size: 0.85em;
+    margin-bottom: 5px;
+}
+
+/* Inputs Modernos */
+.input-moderno {
+    width: 100%;
+    padding: 10px;
+    background: #1e1e1e;
+    border: 1px solid #333;
+    color: white;
+    border-radius: 6px;
+    outline: none;
+}
+.input-moderno:focus { border-color: #4d94ff; }
+
+/* BOTÓN AÑADIR MEJORADO */
+.btn-añadir-pro {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    background: linear-gradient(135deg, #4d94ff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-añadir-pro:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(77, 148, 255, 0.4);
+}
+
+.btn-añadir-pro:active { transform: translateY(0); }
+
+
+/* Contenedor del formulario */
+.form-carga-ejercicio {
+    background: #252525;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #333;
+}
+
+/* El grid de 3 columnas para Series/Reps/Obs */
+.grid-inputs-pequeños {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.5fr; /* La de obs un poco más ancha */
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* Mejoras a los inputs */
+.input-moderno {
+    width: 100%;
+    box-sizing: border-box; /* Evita que el padding ensanche el input */
+    padding: 10px;
+    background: #111;
+    border: 1px solid #444;
+    color: white;
+    border-radius: 6px;
+}
+
+.input-moderno:focus {
+    border-color: #4d94ff;
+    outline: none;
+}
+
+/* El botón azul con degradado */
+.btn-añadir-pro {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #4d94ff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-añadir-pro:hover {
+    filter: brightness(1.2);
+    box-shadow: 0 4px 12px rgba(77, 148, 255, 0.3);
+}
+
+
+/* 1. Ajuste al contenido del modal para que no crezca infinito */
+.modal-content {
+    height: auto;           /* Que el modal solo crezca lo necesario */
+    max-height: 85vh;       /* Pero que no se pase del 85% de la pantalla */
+    width: 500px;           /* Un ancho fijo para que no se vea tan desparramado */
+    padding: 15px;          /* Menos margen interno */
+    gap: 8px;               /* Menos espacio entre los bloques */
+    display: flex;
+    flex-direction: column;
+}
+
+.plan-header-box {
+    flex-shrink: 0; 
+}
+
+
+
+/* 2. El cuadro de los ejercicios (el que ahora será el único con scroll) */
+.scroll-estetico {
+    flex: none;             /* Deja de estirarse por defecto */
+    max-height: 200px;      /* Altura máxima más corta para la lista */
+    overflow-y: auto;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+
+/* Estilización de la barra de scroll para que no sea la fea por defecto */
+.scroll-estetico::-webkit-scrollbar {
+    width: 6px;
+}
+.scroll-estetico::-webkit-scrollbar-track {
+    background: #111;
+}
+.scroll-estetico::-webkit-scrollbar-thumb {
+    background: #4d94ff;
+    border-radius: 10px;
+}
+
+.form-carga-ejercicio, .modal-buttons {
+    flex-shrink: 0; /* Prohibido que el modal los oculte */
+    background: #252525;
+    z-index: 10;
+}
+
+
+.form-carga-ejercicio {
+    padding: 12px;
+    gap: 8px;
+    background: #222;
+    border-radius: 8px;
+}
+
+/* Reducimos los márgenes de los títulos y campos */
+.modal-row-full, .grid-inputs-pequeños {
+    margin-bottom: 8px !important;
+}
+
+.label-sutil {
+    margin-bottom: 2px;
+    font-size: 0.8em;
+}
+
+/* Botón añadir más petiso */
+.btn-añadir-pro {
+    padding: 8px;
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+/* Botones finales más juntos */
+.modal-buttons {
+    padding-top: 10px;
+    margin-top: 5px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+
+
+
+/* Estilo para el área de observaciones en el editor */
+#editObs {
+    width: 100%;
+    background-color: #111; /* Fondo oscuro igual a los otros inputs */
+    color: #fff;            /* Texto blanco */
+    border: 1px solid #333; /* Borde sutil */
+    border-radius: 8px;     /* Bordes redondeados */
+    padding: 12px;          /* Espacio para que el texto no toque los bordes */
+    font-family: inherit;   /* Que use la misma letra que el resto */
+    font-size: 0.9em;
+    resize: vertical;       /* Permite agrandar hacia abajo pero no hacia los costados */
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    box-sizing: border-box; /* Fundamental para que no se pase del ancho del modal */
+}
+
+/* Efecto cuando el profe está escribiendo */
+#editObs:focus {
+    border-color: #4d94ff;
+    box-shadow: 0 0 8px rgba(77, 148, 255, 0.2);
+}
+
+/* Personalizar la barrita de scroll interna del cuadro (solo Chrome/Edge) */
+#editObs::-webkit-scrollbar {
+    width: 6px;
+}
+#editObs::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 10px;
+}
+
+
+
+.input-moderno-area {
+    width: 100% !important;   /* Obliga a ocupar todo el ancho del modal */
+    min-height: 100px;        /* Altura mínima para que no sea un cuadradito */
+    background-color: #1a1a1a !important; /* Fondo oscuro */
+    color: #ffffff !important;           /* Texto blanco */
+    border: 1px solid #444 !important;    /* Borde gris oscuro */
+    border-radius: 8px;
+    padding: 12px;
+    font-family: inherit;
+    font-size: 0.95em;
+    line-height: 1.5;
+    resize: vertical;         /* Permite al usuario estirarlo hacia abajo */
+    outline: none;
+    box-sizing: border-box;   /* Evita que se desborde */
+}
+
+.input-moderno-area:focus {
+    border-color: #4d94ff !important;
+    box-shadow: 0 0 10px rgba(77, 148, 255, 0.2);
+}
+
+/* Para quitar el borde blanco/azul feo que pone Chrome por defecto */
+.input-moderno-area:active, .input-moderno-area:focus {
+    outline: none !important;
+}
+
+
+
+/* Estilo general para las barras de desplazamiento en Chrome, Edge y Safari */
+#listaEjerciciosEditar::-webkit-scrollbar,
+#listaEjerciciosVer::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar,
+.scroll-estetico::-webkit-scrollbar {
+    width: 6px;               /* Scroll bien finito */
+    height: 6px;
+}
+
+/* El fondo del scroll (la pista) */
+#listaEjerciciosEditar::-webkit-scrollbar-track,
+#listaEjerciciosVer::-webkit-scrollbar-track,
+.scroll-estetico::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1); 
+    border-radius: 10px;
+}
+
+/* La barrita que se mueve */
+#listaEjerciciosEditar::-webkit-scrollbar-thumb,
+#listaEjerciciosVer::-webkit-scrollbar-thumb,
+.scroll-estetico::-webkit-scrollbar-thumb {
+    background: #444;         /* Color gris oscuro */
+    border-radius: 10px;      /* Bordes redondeados */
+    border: 1px solid #1a1a1a; /* Espacio para que parezca que flota */
+}
+
+/* Cuando pasas el mouse por encima de la barrita */
+#listaEjerciciosEditar::-webkit-scrollbar-thumb:hover,
+#listaEjerciciosVer::-webkit-scrollbar-thumb:hover,
+.scroll-estetico::-webkit-scrollbar-thumb:hover {
+    background: #4d94ff;      /* Color azul como tus botones al hacer hover */
+}
+
+/* Compatibilidad para Firefox */
+#listaEjerciciosEditar,
+#listaEjerciciosVer,
+.scroll-estetico {
+    scrollbar-width: thin;
+    scrollbar-color: #444 rgba(0, 0, 0, 0.1);
+}
+
+
+
+
+
+
+
+
+@media (max-width: 768px) {
+    /* 1. Hacemos que los modales ocupen casi todo el ancho */
+    .modal-content {
+        width: 95% !important;
+        margin: 10px auto;
+        padding: 15px !important;
+    }
+
+    /* 2. Convertimos los GRIDS de 3 columnas en filas simples o de 2 */
+    .modal-grid-row, 
+    .grid-inputs-pequeños,
+    div[style*="display: grid"] { 
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important; /* Dos columnas: Series y Reps */
+        gap: 10px !important;
+    }
+
+    /* 3. Las observaciones ocupan todo el ancho abajo */
+    #editObs, .input-moderno-area {
+        grid-column: span 2; /* Se estira para ocupar las dos columnas anteriores */
+    }
+
+    /* 4. Agrandamos los botones para que sea fácil tocarlos con el dedo */
+    .btn-guardar, .btn-cancelar, button {
+        width: 100%;
+        padding: 15px !important;
+        font-size: 16px !important;
+        margin-bottom: 10px;
+    }
+
+    .modal-buttons {
+        flex-direction: column; /* Botones uno arriba del otro */
+    }
+
+    /* 5. Títulos y textos */
+    h3 {
+        font-size: 1.2rem;
+    }
+}
+
+
+.ejercicio-edit-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px;
+}
+
+
+input, select, textarea {
+    font-size: 16px !important;
+}
+
+
+
+
+
+@media (max-width: 768px) {
+    .container { padding: 10px; }
+    
+    table, thead, tbody, th, td, tr { display: block; }
+    
+    thead tr { display: none; }
+    
+    tr {
+        margin-bottom: 20px;
+        border: 1px solid #333;
+        border-radius: 12px;
+        padding: 10px;
+    }
+    
+    td {
+        text-align: right;
+        padding-left: 50% !important;
+        position: relative;
+        border-bottom: 1px solid #222;
+    }
+
+    td:last-child { border-bottom: none; }
+
+    td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 15px;
+        width: 45%;
+        text-align: left;
+        font-weight: bold;
+        color: #2447ff;
+    }
+
+    .btn-rutina { width: 100%; margin-top: 10px; }
+}
+
+
+
+.botones-acciones {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .botones-acciones {
+        flex-direction: column; /* Uno abajo del otro en celular */
+        gap: 5px;
+    }
+    .btn-rutina {
+        width: 100%;
+        padding: 10px;
+    }
+}

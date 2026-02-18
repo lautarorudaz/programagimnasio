@@ -354,26 +354,37 @@ app.get('/api/rutinas/:profesorId', (req, res) => {
 
 
 app.post('/api/guardar-rutina', (req, res) => {
-    const { alumnoId, profesorId, nombrePlan, ejercicios } = req.body;
+    // Recibimos profesor_id desde el frontend
+    const { alumno_id, nombre_plan, profesor_id, ejercicios } = req.body;
 
-    // 1. Insertamos el encabezado de la rutina
-    const queryHeader = 'INSERT INTO rutinas_header (alumno_id, profesor_id, nombre_plan) VALUES (?, ?, ?)';
+    // AGREGAMOS profesor_id a la consulta SQL
+    const sqlHeader = "INSERT INTO rutinas_header (alumno_id, nombre_plan, profesor_id) VALUES (?, ?, ?)";
     
-    db.query(queryHeader, [alumnoId, profesorId, nombrePlan], (err, result) => {
-        if (err) return res.status(500).json({ error: err.message });
+    db.query(sqlHeader, [alumno_id, nombre_plan, profesor_id], (err, result) => {
+        if (err) {
+            console.error("Error al insertar header:", err);
+            return res.status(500).json(err);
+        }
 
-        const rutinaId = result.insertId;
+        const nuevaRutinaId = result.insertId; 
 
-        // 2. Insertamos todos los ejercicios en masa
+        const queryEjercicios = 'INSERT INTO rutina_ejercicios (rutina_id, dia, nombre_ejercicio, series, repeticiones, observaciones) VALUES ?';
+
         const valoresEjercicios = ejercicios.map(ej => [
-            rutinaId, ej.nombre, ej.series, ej.reps, ej.obs
+            nuevaRutinaId,
+            ej.dia,    
+            ej.nombre, 
+            ej.series, 
+            ej.reps,   
+            ej.obs     
         ]);
 
-        const queryEjercicios = 'INSERT INTO rutina_ejercicios (rutina_id, nombre_ejercicio, series, repeticiones, observaciones) VALUES ?';
-        
-        db.query(queryEjercicios, [valoresEjercicios], (err) => {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json({ success: true, message: "Rutina guardada con éxito" });
+        db.query(queryEjercicios, [valoresEjercicios], (errEj) => {
+            if (errEj) {
+                console.error("Error al insertar ejercicios:", errEj);
+                return res.status(500).json(errEj);
+            }
+            res.json({ success: true, message: "Rutina guardada" });
         });
     });
 });
@@ -420,16 +431,18 @@ app.get('/api/ejercicio/:id', (req, res) => {
 
 
 
-app.get('/api/ver-rutina/:id', (req, res) => {
-    const alumnoId = req.params.id;
+app.get('/api/obtener-rutina-detalle/:id', (req, res) => {
+    const rutinaId = req.params.id; // Este es el ID de la rutina (plan)
     const sql = `
-        SELECT re.id, re.nombre_ejercicio, re.series, re.repeticiones, re.observaciones 
-        FROM rutinas_header h
-        JOIN rutina_ejercicios re ON h.id = re.rutina_id
-        WHERE h.alumno_id = ?`;
+        SELECT id, nombre_ejercicio, series, repeticiones, observaciones, dia 
+        FROM rutina_ejercicios 
+        WHERE rutina_id = ?`;
 
-    db.query(sql, [alumnoId], (err, results) => {
-        if (err) return res.status(500).json(err);
+    db.query(sql, [rutinaId], (err, results) => {
+        if (err) {
+            console.error("Error en DB:", err);
+            return res.status(500).json(err);
+        }
         res.json(results);
     });
 });
@@ -440,15 +453,23 @@ app.get('/api/ver-rutina/:id', (req, res) => {
 
 
 // 2. RUTA PARA GUARDAR LOS CAMBIOS (Update en rutina_ejercicios)
+// RUTA PARA ACTUALIZAR EL EJERCICIO (El "destino" que falta)
 app.put('/api/actualizar-ejercicio/:id', (req, res) => {
-    const idEjercicio = req.params.id;
-    const { nombre_ejercicio, series, repeticiones, observaciones } = req.body;
-    
-    const sql = `UPDATE rutina_ejercicios SET nombre_ejercicio = ?, series = ?, repeticiones = ?, observaciones = ? WHERE id = ?`;
+    const { id } = req.params;
+    const { nombre, series, reps, obs } = req.body;
 
-    db.query(sql, [nombre_ejercicio, series, repeticiones, observaciones, idEjercicio], (err, result) => {
-        if (err) return res.status(500).json(err);
-        res.json({ message: "Actualizado" });
+    // Ajusté los nombres de las columnas a como los tenés en el SELECT anterior
+    const sql = `
+        UPDATE rutina_ejercicios 
+        SET nombre_ejercicio = ?, series = ?, repeticiones = ?, observaciones = ? 
+        WHERE id = ?`;
+
+    db.query(sql, [nombre, series, reps, obs, id], (err, result) => {
+        if (err) {
+            console.error("Error al actualizar en DB:", err);
+            return res.status(500).json({ success: false, error: err });
+        }
+        res.json({ success: true, message: "Ejercicio actualizado correctamente" });
     });
 });
 

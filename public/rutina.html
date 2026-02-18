@@ -55,6 +55,83 @@
 
 
 <script>
+
+    function cerrarSesion() {
+    // Borramos los datos del profesor del almacenamiento local
+    localStorage.removeItem('usuarioLogueado');
+    // Redirigimos al index (o login)
+    window.location.href = 'sesion.html'; 
+}
+
+
+
+    var ejerciciosDelPlanActual = [];
+
+
+
+
+async function cargarEjerciciosDelPlan() {
+    const idPlan = document.getElementById('selectorPlanes').value;
+    const selectorEjercicios = document.getElementById('selectorEjercicios');
+
+    if (!idPlan) return;
+
+    try {
+        const res = await fetch(`http://localhost:3000/api/obtener-rutina-detalle/${idPlan}`);
+        
+        // Verificamos si la respuesta es OK antes de convertir a JSON
+        if (!res.ok) throw new Error("Error en la ruta del servidor");
+
+        const datos = await res.json();
+        
+        // Guardamos en la variable global
+        ejerciciosDelPlanActual = datos;
+        
+        console.log("Ejercicios cargados:", ejerciciosDelPlanActual);
+
+        // Habilitamos y actualizamos la lista
+        selectorEjercicios.disabled = false;
+        actualizarListaPorDia();
+
+    } catch (error) {
+        console.error("Error al cargar ejercicios:", error);
+        alert("No se pudieron cargar los ejercicios. Verifica la ruta en el servidor.");
+    }
+}
+
+// 3. Función de filtrado
+function actualizarListaPorDia() {
+    // Verificamos que la variable exista y tenga datos
+    if (!ejerciciosDelPlanActual) return;
+
+    const diaSeleccionado = document.getElementById('filtroDiaEditar').value;
+    const selectorEjercicios = document.getElementById('selectorEjercicios');
+    
+    const filtrados = ejerciciosDelPlanActual.filter(ej => 
+        ej.dia && ej.dia.toString().trim().toLowerCase() === diaSeleccionado.toLowerCase()
+    );
+
+    selectorEjercicios.innerHTML = '<option value="">-- Seleccione un ejercicio --</option>';
+
+    if (filtrados.length > 0) {
+        filtrados.forEach(ej => {
+            const opt = document.createElement('option');
+            opt.value = ej.id;
+            opt.textContent = ej.nombre_ejercicio;
+            selectorEjercicios.appendChild(opt);
+        });
+        selectorEjercicios.disabled = false;
+    } else {
+        selectorEjercicios.innerHTML = `<option value="">No hay ejercicios para el ${diaSeleccionado}</option>`;
+        selectorEjercicios.disabled = true;
+    }
+}
+
+
+
+
+
+
     document.getElementById('mobile-menu').addEventListener('click', function() {
     const navLinks = document.querySelector('.nav-links');
     navLinks.classList.toggle('active');
@@ -151,10 +228,8 @@ document.head.appendChild(styleCustom);
 
 
 
-let ejerciciosTemporales = [];
-
-// Función para abrir el modal (Corregida para evitar el error de la imagen 96d70f)
 function abrirModalAgregar(id, nombreCompleto) {
+    // Referencias exactas a los IDs del HTML de arriba
     const spanNombre = document.getElementById('modalAlumnoNombre');
     const inputId = document.getElementById('modalAlumnoId');
     const modal = document.getElementById('modalRutina');
@@ -170,7 +245,11 @@ function abrirModalAgregar(id, nombreCompleto) {
     }
 }
 
+let ejerciciosTemporales = [];
+
+// Función para ir armando la lista en el modal
 function agregarEjercicioALista() {
+    const dia = document.getElementById('inputDia').value;
     const nombre = document.getElementById('inputEjercicio').value;
     const series = document.getElementById('inputSeries').value;
     const reps = document.getElementById('inputReps').value;
@@ -181,9 +260,16 @@ function agregarEjercicioALista() {
         return;
     }
 
-    ejerciciosTemporales.push({ nombre, series, reps, obs });
-    
-    // Limpiar inputs
+    // IMPORTANTE: Estos nombres de propiedad deben ser iguales en el server
+    ejerciciosTemporales.push({ 
+        dia: dia, 
+        nombre: nombre, 
+        series: series, 
+        reps: reps, 
+        obs: obs 
+    });
+
+    // Limpiar campos para el siguiente
     document.getElementById('inputEjercicio').value = '';
     document.getElementById('inputSeries').value = '';
     document.getElementById('inputReps').value = '';
@@ -192,58 +278,210 @@ function agregarEjercicioALista() {
     renderizarListaEjercicios();
 }
 
-function renderizarListaEjercicios() {
-    const lista = document.getElementById('listaEjerciciosAgregados');
-    lista.innerHTML = ejerciciosTemporales.length === 0 ? 
-        '<p style="color:gray; text-align:center;">No hay ejercicios agregados aún.</p>' : '';
 
-    ejerciciosTemporales.forEach((ej, index) => {
-        lista.innerHTML += `
-            <div class="ejercicio-item">
-                <span><strong>${ej.nombre}</strong> - ${ej.series}x${ej.reps} <small>(${ej.obs})</small></span>
-                <button onclick="eliminarEjercicio(${index})" class="btn-borrar-mini">&times;</button>
-            </div>
-        `;
+
+
+
+
+function renderizarListaEjercicios() {
+    const contenedor = document.getElementById('listaEjerciciosAgregados');
+    contenedor.innerHTML = "";
+
+    if (ejerciciosTemporales.length === 0) {
+        contenedor.innerHTML = '<p style="color:#666; text-align:center;">No hay ejercicios agregados.</p>';
+        return;
+    }
+
+    // Agrupamos los ejercicios por día
+    const diasOrdenados = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    
+    diasOrdenados.forEach(dia => {
+        const ejerciciosDelDia = ejerciciosTemporales.filter(e => e.dia === dia);
+        
+        if (ejerciciosDelDia.length > 0) {
+            // Creamos el contenedor del día
+            const divGrupo = document.createElement('div');
+            divGrupo.className = "grupo-dia";
+            
+            let htmlEjercicios = `<div class="titulo-dia-lista">${dia}</div>`;
+            
+            ejerciciosDelDia.forEach(ej => {
+                // Buscamos el índice original para poder borrarlo correctamente
+                const originalIndex = ejerciciosTemporales.indexOf(ej);
+                
+                htmlEjercicios += `
+                    <div class="ejercicio-item" style="display:flex; justify-content:space-between; background:#2a2a2a; padding:5px 10px; margin-bottom:3px; border-radius:4px; font-size:0.85em;">
+                        <span>${ej.nombre} - <small>${ej.series}x${ej.reps}</small></span>
+                        <button onclick="eliminarEjercicio(${originalIndex})" style="background:none; border:none; color:#ff4d4d; cursor:pointer;">&times;</button>
+                    </div>
+                `;
+            });
+            
+            divGrupo.innerHTML = htmlEjercicios;
+            contenedor.appendChild(divGrupo);
+        }
     });
+    contenedor.scrollTop = contenedor.scrollHeight;
 }
+
+
+
+
+function eliminarEjercicio(index) {
+    ejerciciosTemporales.splice(index, 1);
+    renderizarListaEjercicios();
+}
+
+
 
 function cerrarModal() {
     document.getElementById('modalRutina').style.display = 'none';
 }
 
 
-function guardarRutinaCompleta() {
-    const alumnoId = document.getElementById('modalAlumnoId').value;
-    const nombrePlan = document.getElementById('nombrePlan').value;
-    const profesorId = localStorage.getItem('usuarioId'); // Obtenemos el ID del profe
 
-    if (!nombrePlan || ejerciciosTemporales.length === 0) {
-        alert("Por favor, poné un nombre al plan y agregá al menos un ejercicio.");
+
+
+
+
+
+
+
+
+
+
+let listaEjerciciosTemp = [];
+let idAlumnoActual = null;
+
+function agregarRutina(idAlumno) {
+    idAlumnoActual = idAlumno;
+    
+    // Buscamos los elementos por los IDs nuevos
+    const modal = document.getElementById('modalAgregarRutina');
+    const inputNombre = document.getElementById('nombrePlanGeneral');
+    const vistaPrevia = document.getElementById('previsualizacionPlan');
+
+    // Validación de seguridad para que no salga el error de "No encontrado"
+    if (!modal || !inputNombre || !vistaPrevia) {
+        alert("Error técnico: Faltan IDs en el HTML. Revisa la consola (F12).");
+        console.error("IDs faltantes:", { modal, inputNombre, vistaPrevia });
         return;
     }
 
-    const datosARemitiir = {
-        alumnoId: alumnoId,
-        profesorId: profesorId,
-        nombrePlan: nombrePlan,
-        ejercicios: ejerciciosTemporales
+    // Limpiamos el modal para un nuevo uso
+    inputNombre.value = "";
+    listaEjerciciosTemp = [];
+    vistaPrevia.innerHTML = '<p style="color: #888; text-align: center;">Comience a agregar ejercicios...</p>';
+    
+    modal.style.display = 'flex';
+}
+
+
+
+
+function agregarAListaTemporal() {
+    const dia = document.getElementById('inputDia').value;
+    const nombre = document.getElementById('inputNombreEj').value;
+    const series = document.getElementById('inputSeries').value;
+    const reps = document.getElementById('inputReps').value;
+
+    if (!nombre || !series || !reps) {
+        alert("Por favor, completa los datos del ejercicio.");
+        return;
+    }
+
+    // Agregamos al array
+    listaEjerciciosTemp.push({
+        dia: dia,
+        nombre_ejercicio: nombre,
+        series: series,
+        repeticiones: reps,
+        observaciones: ""
+    });
+
+    // Limpiamos solo los campos del ejercicio
+    document.getElementById('inputNombreEj').value = "";
+    document.getElementById('inputSeries').value = "";
+    document.getElementById('inputReps').value = "";
+
+    actualizarVistaPrevia();
+}
+
+function actualizarVistaPrevia() {
+    const contenedor = document.getElementById('previsualizacionPlan');
+    contenedor.innerHTML = "";
+
+    listaEjerciciosTemp.forEach((ej, index) => {
+        const div = document.createElement('div');
+        div.className = 'ejercicio-temp-item';
+        div.innerHTML = `
+            <span><b style="color:#4d94ff;">${ej.dia}:</b> ${ej.nombre_ejercicio} (${ej.series}x${ej.repeticiones})</span>
+            <button onclick="eliminarDeListaTemp(${index})" style="background:none; border:none; color:#ff4d4d; cursor:pointer;">&times;</button>
+        `;
+        contenedor.appendChild(div);
+    });
+}
+
+function eliminarDeListaTemp(index) {
+    listaEjerciciosTemp.splice(index, 1);
+    actualizarVistaPrevia();
+}
+
+function cerrarModalAgregar() {
+    document.getElementById('modalAgregarRutina').style.display = 'none';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function guardarRutinaCompleta() {
+    const alumnoId = document.getElementById('modalAlumnoId').value;
+    const nombrePlan = document.getElementById('nombrePlan').value;
+    const profesorId = localStorage.getItem('usuarioId'); 
+
+    if (!nombrePlan || ejerciciosTemporales.length === 0) {
+        alert("Por favor, poné un nombre al plan y agregá ejercicios.");
+        return;
+    }
+
+    const datosARemitir = {
+        alumno_id: alumnoId,
+        nombre_plan: nombrePlan,
+        profesor_id: profesorId,
+        ejercicios: ejerciciosTemporales // Enviamos el array con 'dia' incluido
     };
 
     fetch('http://localhost:3000/api/guardar-rutina', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datosARemitiir)
+        body: JSON.stringify(datosARemitir)
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) throw new Error('Error en el servidor');
+        return res.json();
+    })
     .then(data => {
-        if (data.success) {
-            alert("¡Rutina guardada correctamente!");
-            cerrarModal();
-            location.reload(); // Recargamos para que se vea la "Última Actualización"
-        }
+        alert("¡Plan semanal guardado correctamente!");
+        cerrarModal();
+        location.reload();
     })
-    .catch(err => console.error("Error al guardar:", err));
+    .catch(err => {
+        console.error("Error al guardar:", err);
+        alert("Error al guardar. Revisá la consola del servidor.");
+    });
 }
+
 
 
 
@@ -290,47 +528,43 @@ async function mostrarEjerciciosEnVer() {
     const planId = document.getElementById('selectorPlanesVer').value;
     const contenedor = document.getElementById('contenedorEjerciciosVer');
 
-    if (!planId) {
-        contenedor.innerHTML = '<p style="text-align: center; color: #888;">Seleccione un plan para ver los detalles.</p>';
-        return;
-    }
-
     try {
-        // Buscamos los ejercicios de ese plan
         const res = await fetch(`http://localhost:3000/api/ejercicios-plan/${planId}`);
         const ejercicios = await res.json();
-
-        // Limpiamos y generamos la lista
         contenedor.innerHTML = '';
 
-        if (ejercicios.length === 0) {
-            contenedor.innerHTML = '<p>Este plan no tiene ejercicios cargados.</p>';
-            return;
-        }
-
-        ejercicios.forEach(ej => {
-            const div = document.createElement('div');
-            div.className = 'ejercicio-item-consulta';
-            div.style = "background: #2a2a2a; padding: 10px; margin-bottom: 10px; border-radius: 5px; border-left: 4px solid #007bff;";
+        // Definimos el orden de los días para iterar
+        const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        
+        diasSemana.forEach(dia => {
+            // Filtramos ejercicios que pertenecen a este día
+            const ejerciciosDelDia = ejercicios.filter(e => e.dia === dia);
             
-            div.innerHTML = `
-                <h4 style="margin: 0; color: #fff;">${ej.nombre_ejercicio}</h4>
-                <p style="margin: 5px 0; font-size: 0.9em;">
-                    <strong>Series:</strong> ${ej.series} | 
-                    <strong>Repeticiones:</strong> ${ej.repeticiones}
-                </p>
-                <p style="margin: 0; font-size: 0.85em; color: #bbb;">
-                    <em>Obs: ${ej.observaciones || 'Sin observaciones'}</em>
-                </p>
-            `;
-            contenedor.appendChild(div);
+            if (ejerciciosDelDia.length > 0) {
+                // Creamos un separador estético para el día
+                const divDia = document.createElement('div');
+                divDia.innerHTML = `<h4 style="color: #4d94ff; margin: 15px 0 10px 0; border-bottom: 1px solid #444;">${dia}</h4>`;
+                contenedor.appendChild(divDia);
+
+                // Insertamos los ejercicios de ese día
+                ejerciciosDelDia.forEach(ej => {
+                    const item = document.createElement('div');
+                    item.className = 'ejercicio-item-consulta';
+                    item.style = "background: #2a2a2a; padding: 10px; margin-bottom: 8px; border-radius: 8px;";
+                    item.innerHTML = `
+                        <p style="margin:0;"><strong>${ej.nombre_ejercicio}</strong></p>
+                        <small style="color: #bbb;">${ej.series} series x ${ej.repeticiones} reps</small>
+                    `;
+                    contenedor.appendChild(item);
+                });
+            }
         });
 
-    } catch (error) {
-        console.error("Error al cargar ejercicios:", error);
-        contenedor.innerHTML = '<p>Error al cargar los ejercicios.</p>';
-    }
+    } catch (error) { console.error("Error visualizando:", error); }
 }
+
+
+
 
 function cerrarModalVer() {
     document.getElementById('modalVerRutina').style.display = 'none';
@@ -414,38 +648,23 @@ function cerrarModalEdicion() {
 }
 
 // 3. FUNCIÓN PARA ABRIR EL MODAL (La que el botón ahora sí va a encontrar)
-async function abrirModalEdicion(idAlumno) {
-    const modal = document.getElementById('modalEdicionUnico');
-    
-    try {
-        const res = await fetch(`http://localhost:3000/api/rutinas/${idAlumno}`);
-        
-        if (!res.ok) throw new Error("La ruta /api/rutinas no responde en el servidor");
-
-        const ejercicios = await res.json();
-
-        if (!ejercicios || ejercicios.length === 0) {
-            alert("Este alumno no tiene ejercicios cargados en su plan.");
-            return;
-        }
-
-        // Cargamos el primer ejercicio encontrado en los campos del modal
-        const ej = ejercicios[0];
-        
-        document.getElementById('editId').value = idAlumno;
-        document.getElementById('editNombre').value = ej.nombre_ejercicio;
-        document.getElementById('editSeries').value = ej.series;
-        document.getElementById('editReps').value = ej.repeticiones;
-        document.getElementById('editObs').value = ej.observaciones;
-
-        // Mostramos el modal
-        modal.style.setProperty('display', 'flex', 'important');
-
-    } catch (error) {
-        console.error("Error:", error);
-        alert("No se pudo obtener la rutina. Revisá la consola.");
+function abrirModalEditar(idRutina) {
+    // 1. Pedimos los datos al servidor
+    fetch(`http://localhost:3000/api/obtener-rutina-detalle/${idRutina}`)
+        .then(res => res.json())
+        .then(data => {
+            ejerciciosCargadosParaEditar = data; // Guardamos todo el plan
+            document.getElementById('modalEditarRutina').style.display = 'flex';
+            
+            // Forzamos que empiece en Lunes (o el día que quieras)
+            document.getElementById('filtroDiaEditar').value = "Lunes";
+            renderizarEjerciciosEdicion(); 
+        })
+        .catch(err => console.error("Error al cargar rutina:", err));
     }
-}
+
+
+
 
 
 
@@ -458,77 +677,61 @@ function cerrarModalEdicion() {
 
 
 let planesDelAlumno = []; // Para guardar los headers (id, nombre_plan)
-let ejerciciosDelPlanActual = []; // Para guardar los ejercicios del plan elegido
+
+
+
+ejerciciosDelPlanActual = [];
 
 async function editarRutina(idAlumno) {
     const modal = document.getElementById('modalEdicionUnico');
     const selectPlanes = document.getElementById('selectorPlanes');
-    
+
     try {
-        // Buscamos los Planes (headers) del alumno
-        // Necesitás una ruta que devuelva solo los planes de rutinas_header
         const res = await fetch(`http://localhost:3000/api/planes-alumno/${idAlumno}`);
-        planesDelAlumno = await res.json();
+        const planesDelAlumno = await res.json();
 
         if (planesDelAlumno.length === 0) {
             alert("El alumno no tiene planes creados.");
             return;
         }
 
-        // Llenamos el primer selector con los planes (ej: "Fuerza - Jose")
+        // Llenamos selector de planes
         selectPlanes.innerHTML = '<option value="">-- Seleccione un Plan --</option>';
         planesDelAlumno.forEach(plan => {
             const opt = document.createElement('option');
-            opt.value = plan.id; // El id de rutinas_header
+            opt.value = plan.id;
             opt.textContent = plan.nombre_plan;
             selectPlanes.appendChild(opt);
         });
 
         modal.style.setProperty('display', 'flex', 'important');
-    } catch (error) { console.error("Error:", error); }
-}
-
-
-async function cargarEjerciciosDelPlan() {
-    const planId = document.getElementById('selectorPlanes').value;
-    const selectEj = document.getElementById('selectorEjercicios');
-    
-    if (!planId) {
-        selectEj.disabled = true;
-        return;
+    } catch (error) {
+        console.error("Error:", error);
     }
-
-    try {
-        // Ahora buscamos los ejercicios que pertenecen a ESE plan_id
-        const res = await fetch(`http://localhost:3000/api/ejercicios-plan/${planId}`);
-        ejerciciosDelPlanActual = await res.json();
-
-        selectEj.innerHTML = '<option value="">-- Seleccione un Ejercicio --</option>';
-        ejerciciosDelPlanActual.forEach(ej => {
-            const opt = document.createElement('option');
-            opt.value = ej.id; // El id de rutina_ejercicios
-            opt.textContent = ej.nombre_ejercicio;
-            selectEj.appendChild(opt);
-        });
-        
-        selectEj.disabled = false;
-    } catch (error) { console.error(error); }
 }
+
+
+
+
+
+
+
 
 
 function cargarDatosEjercicioIndividual() {
-    const idSeleccionado = document.getElementById('selectorEjercicios').value;
-    const ej = ejerciciosDelPlanActual.find(i => i.id == idSeleccionado);
+    const idEjercicio = document.getElementById('selectorEjercicios').value;
+    if (!idEjercicio) return;
+
+    const ej = ejerciciosDelPlanActual.find(item => item.id == idEjercicio);
+
     if (ej) {
         document.getElementById('editId').value = ej.id;
         document.getElementById('editNombre').value = ej.nombre_ejercicio;
         document.getElementById('editSeries').value = ej.series;
         document.getElementById('editReps').value = ej.repeticiones;
-        document.getElementById('editObs').value = ej.observaciones;
+        document.getElementById('editObs').value = ej.observaciones || "";
     }
 }
-
-
 
 
 
@@ -550,31 +753,43 @@ function cargarDatosEjercicioSeleccionado() {
 
 
 
+
 async function guardarCambios() {
-    const idEj = document.getElementById('editId').value;
+    const idEjercicio = document.getElementById('editId').value;
     
-    const body = {
-        nombre_ejercicio: document.getElementById('editNombre').value,
+    const datosEditados = {
+        nombre: document.getElementById('editNombre').value,
         series: document.getElementById('editSeries').value,
-        repeticiones: document.getElementById('editReps').value,
-        observaciones: document.getElementById('editObs').value
+        reps: document.getElementById('editReps').value,
+        obs: document.getElementById('editObs').value
     };
 
+    if (!idEjercicio) {
+        alert("Seleccioná un ejercicio primero");
+        return;
+    }
+
     try {
-        const res = await fetch(`http://localhost:3000/api/actualizar-ejercicio/${idEj}`, {
-            method: 'PUT',
+        const res = await fetch(`http://localhost:3000/api/actualizar-ejercicio/${idEjercicio}`, {
+            method: 'PUT', // IMPORTANTE: Debe ser PUT
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
+            body: JSON.stringify(datosEditados)
         });
 
-        if (res.ok) {
-            alert("¡Rutina actualizada!");
-            location.reload();
+        if (!res.ok) throw new Error("Error en la respuesta del servidor");
+
+        const resultado = await res.json();
+
+        if (resultado.success) {
+            alert("¡Cambios guardados con éxito!");
+            // Refrescamos la lista local para que los cambios se vean reflejados
+            await cargarEjerciciosDelPlan(); 
         } else {
-            alert("Error al guardar.");
+            alert("Error: " + resultado.error);
         }
     } catch (error) {
-        console.error("Error en guardarCambios:", error);
+        console.error("Error al guardar:", error);
+        alert("No se pudo conectar con el servidor para guardar.");
     }
 }
 
@@ -643,44 +858,67 @@ function cerrarModalBorrar() {
 
 </script>
 
-<div id="modalRutina" class="modal-overlay">
+<div id="modalRutina" class="modal-overlay" style="display: none;">
     <div class="modal-content">
-        <div class="modal-header">
-            <h3>Nueva Rutina: <span id="modalAlumnoNombre" style="color: #2447ff;"></span></h3>
-            <button class="close-btn" onclick="cerrarModal()">&times;</button>
-        </div>
-        
+        <h3 style="text-align: center; margin-bottom: 20px;">Plan Semanal: <span id="modalAlumnoNombre" style="color: #4d94ff;"></span></h3>
         <input type="hidden" id="modalAlumnoId">
 
-        <div class="modal-body">
-            <div class="grupo-input">
-                <label>Nombre del Plan</label>
-                <input type="text" id="nombrePlan" placeholder="Ej: Rutina A - Pecho">
-            </div>
-
-            <div class="cargador-ejercicios">
-                <div class="fila">
-                    <input type="text" id="inputEjercicio" placeholder="Nombre del Ejercicio">
-                </div>
-                <div class="fila grid-2">
-                    <input type="number" id="inputSeries" placeholder="Series">
-                    <input type="text" id="inputReps" placeholder="Repeticiones">
-                </div>
-                <div class="fila grid-obs">
-                    <input type="text" id="inputObs" placeholder="Observaciones / Descanso">
-                    <button type="button" class="btn-añadir-item" onclick="agregarEjercicioALista()">+</button>
-                </div>
-            </div>
-
-            <div id="listaEjerciciosAgregados" class="lista-previsualizacion"></div>
+        <div class="plan-header-box">
+            <label class="label-sutil">Nombre General del Plan:</label>
+            <input type="text" id="nombrePlan" placeholder="Ej: Hipertrofia Marzo" class="input-moderno">
         </div>
 
-        <div class="modal-footer">
-            <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
-            <button class="btn-guardar" onclick="guardarRutinaCompleta()">Finalizar y Guardar</button>
+        <div id="listaEjerciciosAgregados" class="scroll-estetico">
+            </div>
+
+        <div class="form-carga-ejercicio">
+            
+            <div style="margin-bottom: 15px;">
+                <label class="label-sutil">Día de entrenamiento:</label>
+                <select id="inputDia" class="select-dia-grande">
+                    <option value="Lunes">Lunes</option>
+                    <option value="Martes">Martes</option>
+                    <option value="Miércoles">Miércoles</option>
+                    <option value="Jueves">Jueves</option>
+                    <option value="Viernes">Viernes</option>
+                    <option value="Sábado">Sábado</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label class="label-sutil">Ejercicio:</label>
+                <input type="text" id="inputEjercicio" placeholder="Nombre del ejercicio..." class="input-moderno">
+            </div>
+
+            <div class="grid-inputs-pequeños">
+                <div>
+                    <label class="label-sutil">Series:</label>
+                    <input type="number" id="inputSeries" class="input-moderno">
+                </div>
+                <div>
+                    <label class="label-sutil">Reps:</label>
+                    <input type="text" id="inputReps" class="input-moderno">
+                </div>
+                <div>
+                    <label class="label-sutil">Obs:</label>
+                    <input type="text" id="inputObs" class="input-moderno">
+                </div>
+            </div>
+
+            <button type="button" onclick="agregarEjercicioALista()" class="btn-añadir-pro">
+                + Añadir ejercicio al plan
+            </button>
+        </div>
+
+        <div class="modal-buttons" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 20px;">
+            <button onclick="guardarRutinaCompleta()" class="btn-guardar">Guardar Todo el Plan</button>
+            <button onclick="cerrarModal()" class="btn-cancelar">Cancelar</button>
         </div>
     </div>
 </div>
+
+
+
 
 
 <div id="modalVerRutina" class="modal-ver-rutina" style="display: none;">
@@ -708,36 +946,48 @@ function cerrarModalBorrar() {
 <div id="modalEdicionUnico" class="modal-edicion-unico" style="display: none;">
     <div class="modal-content">
         <h3>Editar Rutina</h3>
-        
+
         <label>1. Seleccionar Plan (Rutina):</label>
         <select id="selectorPlanes" onchange="cargarEjerciciosDelPlan()" style="width: 100%; margin-bottom: 10px; padding: 8px;">
             <option value="">-- Seleccione un Plan --</option>
         </select>
 
-        <label>2. Seleccionar Ejercicio:</label>
+        <label>2. Filtrar por Día:</label>
+        <select id="filtroDiaEditar" onchange="actualizarListaPorDia()" style="width: 100%; margin-bottom: 10px; padding: 8px;">
+            <option value="Lunes">Lunes</option>
+            <option value="Martes">Martes</option>
+            <option value="Miércoles">Miércoles</option>
+            <option value="Jueves">Jueves</option>
+            <option value="Viernes">Viernes</option>
+            <option value="Sábado">Sábado</option>
+        </select>
+
+        <label>3. Seleccionar Ejercicio:</label>
         <select id="selectorEjercicios" onchange="cargarDatosEjercicioIndividual()" style="width: 100%; margin-bottom: 15px; padding: 8px;" disabled>
             <option value="">-- Primero elija un plan --</option>
         </select>
+
         <hr>
-        
+
         <input type="hidden" id="editId">
         <label>Nombre del Ejercicio:</label>
-        <input type="text" id="editNombre">
-        
+        <input type="text" id="editNombre" class="input-moderno">
+
         <div class="modal-grid-row">
-    <div style="flex: 1;">
-        <label>Series:</label>
-        <input type="number" id="editSeries">
-    </div>
-    <div style="flex: 1;">
-        <label>Reps:</label>
-        <input type="text" id="editReps">
-    </div>
+            <div style="flex: 1;">
+                <label>Series:</label>
+                <input type="number" id="editSeries" class="input-moderno">
+            </div>
+            <div style="flex: 1;">
+                <label>Reps:</label>
+                <input type="text" id="editReps" class="input-moderno">
+            </div>
+        </div>
+
+        <div style="width: 100%; margin-top: 15px;">
+    <label class="label-sutil" style="display: block; margin-bottom: 5px;">Observaciones:</label>
+    <textarea id="editObs" rows="5" class="input-moderno-area" placeholder="Detalles del ejercicio..."></textarea>
 </div>
-        
-        <label>Observaciones:</label>
-        <textarea id="editObs" rows="3"></textarea>
-        
         <div class="modal-buttons">
             <button onclick="guardarCambios()" class="btn-guardar">Actualizar</button>
             <button onclick="cerrarModalEdicion()" class="btn-cancelar">Cerrar</button>
