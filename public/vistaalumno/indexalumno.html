@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio</title>
+    <link rel="stylesheet" href="/public/vistaalumno/indexalumno.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="indexalumno.html" class="nav-logo">GYM<span>APP</span></a>
+
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+
+            <ul class="nav-links">
+                <li><a href="/public/vistaalumno/indexalumno.html" class="nav-item active">Inicio</a></li>
+                <li><a href="/public/vistaalumno/rutinaalumno.html" class="nav-item">Mis Rutinas</a></li>
+                <li><a href="/public/vistaalumno/contacto.html" class="nav-item">Contacto</a></li>
+                <li><a href="#" class="nav-item btn-logout" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="hero-section">
+        <div class="hero-content">
+            <h2>Bienvenido, Alumno</h2>
+            <p>¡Sigue con tu entrenamiento!</p>
+            <a href="rutinaalumno.html" class="btn-principal">Ir a Mis Rutinas</a>
+        </div>
+    </main>
+
+
+
+
+<footer class="main-footer">
+    <div class="footer-container">
+        <div class="footer-logo">
+            <img src="/media/images.jfif" alt="Logo GymApp" id="footerLogo">
+        </div>
+
+        <div class="footer-socials">
+            <a href="#" class="social-link"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384023.png" alt="WhatsApp"></a>
+            <a href="#" class="social-link"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384015.png" alt="Instagram"></a>
+            <a href="#" class="social-link"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384005.png" alt="Facebook"></a>
+        </div>
+
+        <p class="copyright">&copy; 2026 GymApp - Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+
+<script>
+    const menuToggle = document.getElementById('mobile-menu');
+const navLinks = document.querySelector('.nav-links');
+
+menuToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+    
+    // Animación simple de las barritas
+    menuToggle.classList.toggle('is-active');
+});
+
+
+const currentPath = window.location.pathname.split("/").pop();
+
+// Buscar todos los enlaces y comparar con la URL
+const links = document.querySelectorAll('.nav-item');
+links.forEach(link => {
+    const href = link.getAttribute('href');
+    if (href === currentPath) {
+        link.classList.add('active');
+    }
+});
+
+
+   
+    document.addEventListener('DOMContentLoaded', () => {
+        // Usamos la clave exacta de tu captura de pantalla
+        const nombreGuardado = localStorage.getItem('usuarioNombre');
+        
+        const tituloBienvenida = document.querySelector('.hero-content h2');
+        
+        if (nombreGuardado && tituloBienvenida) {
+            tituloBienvenida.textContent = `Bienvenido, ${nombreGuardado}`;
+        } else {
+            console.log("No se encontró usuarioNombre en LocalStorage");
+        }
+    });
+
+
+    function cerrarSesion() {
+    // Borramos los datos del profesor del almacenamiento local
+    localStorage.removeItem('usuarioLogueado');
+    // Redirigimos al index (o login)
+    window.location.href = '/public/sesion.html'; 
+}
+
+
+</script>
+
+
+</body>
+</html>

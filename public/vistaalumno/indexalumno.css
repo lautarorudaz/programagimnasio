@@ -1,0 +1,263 @@
+/* RESET GENERAL */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    color: #fff;
+    position: relative;
+    overflow-x: hidden;
+    padding-top: 80px; /* Mantiene el espacio para el nav fijo */
+}   
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* La imagen de fondo va aquí */
+    background-image: url('/public/media/fondoindexalumno.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    
+    /* CAPA OSCURA: Ajusta el 0.7 para más o menos oscuridad */
+    background-color: rgba(0, 0, 0, 0.7); 
+    background-blend-mode: darken;
+
+    /* FILTROS: Ahora sí se aplicarán solo a la imagen de fondo */
+    filter: contrast(90%) brightness(90%); 
+    
+    z-index: -1; /* Envía la imagen detrás del contenido */
+}
+
+
+/* NAVBAR BASE */
+.navbar {
+    background-color: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(10px); /* Efecto de desenfoque */
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    border-bottom: 1px solid #333;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 1200px;
+}
+
+.nav-logo {
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+
+.nav-logo span {
+    color: #4d94ff; /* El azul que venimos usando */
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    align-items: center;
+}
+
+.nav-item {
+    color: #bbb;
+    text-decoration: none;
+    padding: 10px 15px;
+    font-size: 0.95rem;
+    transition: 0.3s;
+}
+
+.nav-item:hover {
+    color: #4d94ff;
+}
+
+.btn-logout {
+    background-color: #cc0000;
+    color: white;
+    border-radius: 5px;
+    margin-left: 10px;
+}
+
+.btn-logout:hover {
+    background-color: #ff3333;
+    color: white;
+}
+
+/* MENÚ HAMBURGUESA (Mobile) */
+.menu-toggle {
+    display: none; /* Oculto en PC */
+    flex-direction: column;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: #fff;
+    margin: 4px 0;
+    transition: 0.4s;
+}
+
+.nav-item.active {
+    color: #4d94ff !important; /* El azul de tu marca */
+    font-weight: bold;
+    border-bottom: 2px solid #4d94ff; /* Una línea sutil debajo */
+}
+
+/* RESPONSIVE - MOBILE */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: flex;
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 70px;
+        right: -100%; /* Escondido a la derecha */
+        flex-direction: column;
+        background-color: #1a1a1a;
+        width: 100%;
+        height: calc(100vh - 70px);
+        text-align: center;
+        transition: 0.5s;
+        padding-top: 50px;
+    }
+
+    .nav-links.active {
+        right: 0; /* Aparece al clickear */
+    }
+
+    .nav-item {
+        font-size: 1.2rem;
+        padding: 20px;
+        display: block;
+        width: 100%;
+    }
+}
+
+
+
+
+/* --- HERO SECTION (Bienvenida) --- */
+.hero-section {
+    height: calc(100vh - 150px); /* Ajusta según el alto del nav y footer */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.hero-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: #fff;
+    letter-spacing: 1px;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    color: #bbb;
+    margin-bottom: 30px;
+}
+
+/* BOTÓN PRINCIPAL */
+.btn-principal {
+    display: inline-block;
+    background-color: #4d94ff;
+    color: #fff;
+    padding: 15px 40px;
+    border-radius: 50px; /* Botón bien redondeado */
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(77, 148, 255, 0.3);
+}
+
+.btn-principal:hover {
+    background-color: #357ae8;
+    transform: translateY(-3px); /* Efecto de levante */
+    box-shadow: 0 6px 20px rgba(77, 148, 255, 0.5);
+}
+
+/* --- FOOTER --- */
+.main-footer {
+    background-color: #0a0a0a;
+    padding: 40px 0 20px 0;
+    border-top: 1px solid #222;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.footer-logo img {
+    height: 60px; /* Tamaño ajustable de tu logo */
+    margin-bottom: 25px;
+    border-radius: 50%;
+    
+}
+
+.footer-socials {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.social-link img {
+    width: 30px;
+    height: 30px;
+    transition: transform 0.3s ease;
+    filter: invert(0.7); /* Color grisáceo inicial */
+}
+
+.social-link:hover img {
+    transform: scale(1.2);
+    filter: invert(1) sepia(1) saturate(5) hue-rotate(190deg); /* Se vuelve azul al pasar el mouse */
+}
+
+.copyright {
+    color: #555;
+    font-size: 0.85rem;
+    margin-top: 20px;
+}
+
+/* RESPONSIVE MOBILE */
+@media (max-width: 600px) {
+    .hero-content h2 {
+        font-size: 1.8rem;
+    }
+    
+    .btn-principal {
+        width: 100%; /* Botón ancho total en mobile */
+        box-sizing: border-box;
+    }
+}

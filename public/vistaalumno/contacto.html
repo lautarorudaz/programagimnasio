@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio</title>
+    <link rel="stylesheet" href="/public/vistaalumno/contacto.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="indexalumno.html" class="nav-logo">GYM<span>APP</span></a>
+
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+
+            <ul class="nav-links">
+                <li><a href="/public/vistaalumno/indexalumno.html" class="nav-item">Inicio</a></li>
+                <li><a href="/public/vistaalumno/rutinaalumno.html" class="nav-item">Mis Rutinas</a></li>
+                <li><a href="/public/vistaalumno/contacto.html" class="nav-item active">Contacto</a></li>
+                <li><a href="#" class="nav-item btn-logout" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+            </ul>
+        </div>
+    </nav>
+
+
+
+    <main class="contacto-container">
+    <div class="contacto-wrapper">
+        
+        <div class="contacto-info">
+            <h1 class="titulo-contacto">Contáctanos</h1>
+            <p class="desc-contacto">Estamos comprometidos a brindarte la mejor experiencia. Si tenés dudas sobre tu plan o el gimnasio, escribinos.</p>
+            
+            <div class="info-items">
+                <div class="info-item">
+                    <span class="icon">✉</span>
+                    <a href="mailto:soporte@gymapp.com">anima.chaco@gmail.com</a>
+                </div>
+                <div class="info-item">
+                    <span class="icon">📍</span>
+                    <span>Av. Moreno 1020</span>
+                </div>
+                <div class="info-item">
+                    <span class="icon">📍</span>
+                    <span>Av. Edison 6</span>
+                </div>
+                <div class="info-item">
+                    <span class="icon">📱</span>
+                    <span>+54 362 4008912</span>
+                </div>
+                <div class="info-item">
+                    <span class="icon">📱</span>
+                    <span>+54 362 4079393</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="contacto-card">
+            <h3 class="form-titulo">Envianos un mensaje</h3>
+            <form id="formContacto" class="form-grid">
+                <div class="field">
+                    <label>Nombre</label>
+                    <input type="text" placeholder="Tu nombre" class="input-moderno">
+                </div>
+                <div class="field">
+                    <label>Email</label>
+                    <input type="email" placeholder="tuemail@ejemplo.com" class="input-moderno">
+                </div>
+                <div class="field">
+                    <label>Asunto</label>
+                    <input type="text" placeholder="Motivo del mensaje" class="input-moderno">
+                </div>
+                <div class="field">
+                    <label>Mensaje</label>
+                    <textarea rows="4" placeholder="Escribí tu mensaje aquí..." class="input-moderno-area"></textarea>
+                </div>
+                
+                <button type="submit" class="btn-guardar">Enviar Mensaje</button>
+            </form>
+        </div>
+
+    </div>
+</main>
+
+
+<footer class="main-footer">
+    <div class="footer-container">
+        <div class="footer-logo">
+            <img src="/media/images.jfif" alt="Logo GymApp" id="footerLogo">
+        </div>
+
+        <div class="footer-socials">
+            <a href="#" class="social-link"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384023.png" alt="WhatsApp"></a>
+            <a href="#" class="social-link"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384015.png" alt="Instagram"></a>
+            <a href="#" class="social-link"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384005.png" alt="Facebook"></a>
+        </div>
+
+        <p class="copyright">&copy; 2026 GymApp - Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+
+
+
+<script>
+    const menuToggle = document.getElementById('mobile-menu');
+const navLinks = document.querySelector('.nav-links');
+
+menuToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+    
+    // Animación simple de las barritas
+    menuToggle.classList.toggle('is-active');
+});
+
+
+const currentPath = window.location.pathname.split("/").pop();
+
+// Buscar todos los enlaces y comparar con la URL
+const links = document.querySelectorAll('.nav-item');
+links.forEach(link => {
+    const href = link.getAttribute('href');
+    if (href === currentPath) {
+        link.classList.add('active');
+    }
+});
+
+    function cerrarSesion() {
+    // Borramos los datos del profesor del almacenamiento local
+    localStorage.removeItem('usuarioLogueado');
+    // Redirigimos al index (o login)
+    window.location.href = '/public/sesion.html'; 
+}
+
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio</title>
+    <link rel="stylesheet" href="/rutinaespecifica.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="indexalumno.html" class="nav-logo">GYM<span>APP</span></a>
+
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+
+            <ul class="nav-links">
+                <li><a href="indexalumno.html" class="nav-item">Inicio</a></li>
+                <li><a href="/rutinaalumno.html" class="nav-item">Mis Rutinas</a></li>
+                <li><a href="rutinaespecifica.html" class="nav-item active">Entrenamiento</a></li>
+                <li><a href="#" class="nav-item btn-logout">Cerrar Sesión</a></li>
+            </ul>
+        </div>
+    </nav>
+
+
+<script>
+    const menuToggle = document.getElementById('mobile-menu');
+const navLinks = document.querySelector('.nav-links');
+
+menuToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+    
+    // Animación simple de las barritas
+    menuToggle.classList.toggle('is-active');
+});
+
+
+const currentPath = window.location.pathname.split("/").pop();
+
+// Buscar todos los enlaces y comparar con la URL
+const links = document.querySelectorAll('.nav-item');
+links.forEach(link => {
+    const href = link.getAttribute('href');
+    if (href === currentPath) {
+        link.classList.add('active');
+    }
+});
+
+
+</script>
+
+
+</body>
+</html>

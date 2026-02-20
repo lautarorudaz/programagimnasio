@@ -111,39 +111,52 @@ app.get('/rutinas/:id', (req, res) => {
 // --- RUTA ÚNICA DE LOGIN ---
 app.post('/login-general', (req, res) => {
     const { email, password } = req.body;
-    const sql = 'SELECT * FROM usuarios WHERE email = ?';
 
-    db.query(sql, [email], async (err, results) => {
-        if (err || results.length === 0) {
-            return res.status(401).json({ success: false, message: "Usuario no encontrado" });
-        }
+    // 1. Buscamos primero en la tabla de PROFESORES (usuarios)
+    const sqlProfesor = 'SELECT * FROM usuarios WHERE email = ?';
+    
+    db.query(sqlProfesor, [email], async (err, results) => {
+        if (err) return res.status(500).json({ error: err });
 
-        const usuario = results[0];
-
-        try {
-            // 1. Intentamos comparar con Bcrypt (por si ya está encriptada)
-            const coincidenBcrypt = await bcrypt.compare(password, usuario.password);
-            
-            // 2. O comparamos con texto plano (para tus datos actuales como "1234")
-            const coincidenPlano = (password === usuario.password);
-
-            if (coincidenBcrypt || coincidenPlano) {
-                res.json({
+        if (results.length > 0) {
+            const usuario = results[0];
+            // Verificamos contraseña (plana como tienes "1234" o bcrypt)
+            if (password === usuario.password) {
+                return res.json({
                     success: true,
                     id: usuario.id,
                     nombre: usuario.nombre,
-                    rol: usuario.rol
+                    rol: 'profesor',
+                    redirect: '/indexprofesor.html'
                 });
             } else {
-                res.status(401).json({ success: false, message: "Contraseña incorrecta" });
+                return res.status(401).json({ success: false, message: "Contraseña incorrecta" });
             }
-        } catch (error) {
-            // Si bcrypt falla porque el dato no es un hash, cae acá y probamos plano
-            if (password === usuario.password) {
-                return res.json({ success: true, id: usuario.id, nombre: usuario.nombre, rol: usuario.rol });
-            }
-            res.status(401).json({ success: false, message: "Error de validación" });
         }
+
+        // 2. Si no lo encontró en profesores, buscamos en ALUMNNOS
+        const sqlAlumno = 'SELECT * FROM alumnos WHERE email = ?';
+        db.query(sqlAlumno, [email], (err, resultsAlumno) => {
+            if (err) return res.status(500).json({ error: err });
+
+            if (resultsAlumno.length > 0) {
+                const alumno = resultsAlumno[0];
+                if (password === alumno.password) {
+                    return res.json({
+                        success: true,
+                        id: alumno.id,
+                        nombre: alumno.nombre,
+                        rol: 'alumno',
+                        redirect: '/vistaalumno/indexalumno.html' // Ruta a tu carpeta
+                    });
+                } else {
+                    return res.status(401).json({ success: false, message: "Contraseña incorrecta" });
+                }
+            }
+
+            // 3. Si no está en ninguna de las dos
+            res.status(401).json({ success: false, message: "Usuario no encontrado" });
+        });
     });
 });
 
@@ -513,6 +526,28 @@ app.delete('/api/eliminar-plan/:id', (req, res) => {
     });
 });
 
+
+// A. Obtener los encabezados de las rutinas de un alumno
+app.get('/api/rutinas-alumno/:idAlumno', (req, res) => {
+    const idAlumno = req.params.idAlumno;
+    const sql = 'SELECT id, nombre_plan FROM rutinas_header WHERE alumno_id = ?';
+    
+    db.query(sql, [idAlumno], (err, results) => {
+        if (err) return res.status(500).json(err);
+        res.json(results); // Devuelve [{id: 1, nombre_plan: "PRUEBA"}, ...]
+    });
+});
+
+// B. Obtener los ejercicios de una rutina específica
+app.get('/api/ejercicios-rutina/:idRutina', (req, res) => {
+    const idRutina = req.params.idRutina;
+    const sql = 'SELECT * FROM rutina_ejercicios WHERE rutina_id = ? ORDER BY dia ASC';
+    
+    db.query(sql, [idRutina], (err, results) => {
+        if (err) return res.status(500).json(err);
+        res.json(results);
+    });
+});
 
 
 app.listen(3000, () => console.log('🚀 Servidor en http://localhost:3000'));

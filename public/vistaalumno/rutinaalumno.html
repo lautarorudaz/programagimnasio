@@ -1,0 +1,300 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio</title>
+    <link rel="stylesheet" href="/public/vistaalumno/rutinaalumno.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="indexalumno.html" class="nav-logo">GYM<span>APP</span></a>
+
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+
+            <ul class="nav-links">
+                <li><a href="/public/vistaalumno/indexalumno.html" class="nav-item">Inicio</a></li>
+                <li><a href="/public/vistaalumno/rutinaalumno.html" class="nav-item active">Mis Rutinas</a></li>
+                <li><a href="/public/vistaalumno/contacto.html" class="nav-item">Contacto</a></li>
+                <li><a href="#" class="nav-item btn-logout" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+            </ul>
+            
+        </div>
+    </nav>
+
+    <main class="rutinas-container">
+    <section class="rutinas-header">
+        <h2>¡Hoy no te olvides de entrenar!</h2>
+        <p class="subtitle">Tus rutinas</p>
+    </section>
+
+    <div class="card-profesor">
+        <div class="prof-info">
+            <span class="label">Profesor a cargo:</span>
+            <h3 id="nombreProfesor">Juan Pérez</h3> </div>
+        
+        <div class="acciones-rutina">
+            <button class="btn-rutina" onclick="abrirModalRutina()">Ver Plan de Entrenamiento</button>
+            
+            <button class="btn-opinion" onclick="abrirModalOpinion()">¡Manda tu opinión al profesor!</button>
+        </div>
+    </div>
+</main>
+
+<div id="modalRutina" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Tu Plan de Entrenamiento</h3>
+        <p style="color: #888; margin: 20px 0;">Aquí aparecerá el detalle de tus ejercicios cuando conectemos la base de datos.</p>
+        <button class="btn-cancelar" onclick="cerrarModales()">Cerrar</button>
+    </div>
+</div>
+
+<div id="modalOpinion" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Enviar Opinión</h3>
+        <p class="label-sutil">¿Cómo te sentiste hoy? Contale a tu profe:</p>
+        <textarea id="textoOpinion" placeholder="Escribe tu mensaje aquí..." rows="5" class="input-moderno-area"></textarea>
+        <div class="modal-buttons">
+            <button class="btn-guardar" onclick="enviarOpinionFicticia()">Enviar Mensaje</button>
+            <button class="btn-cancelar" onclick="cerrarModales()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+
+
+<footer class="main-footer">
+    <div class="footer-container">
+        <div class="footer-logo">
+            <img src="/media/images.jfif" alt="Logo GymApp" id="footerLogo">
+        </div>
+
+        <div class="footer-socials">
+            <a href="#" class="social-link"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384023.png" alt="WhatsApp"></a>
+            <a href="#" class="social-link"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384015.png" alt="Instagram"></a>
+            <a href="#" class="social-link"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384005.png" alt="Facebook"></a>
+        </div>
+
+        <p class="copyright">&copy; 2026 GymApp - Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+
+    <script>
+    const menuToggle = document.getElementById('mobile-menu');
+const navLinks = document.querySelector('.nav-links');
+
+menuToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+    
+    // Animación simple de las barritas
+    menuToggle.classList.toggle('is-active');
+});
+
+
+const currentPath = window.location.pathname.split("/").pop();
+
+// Buscar todos los enlaces y comparar con la URL
+const links = document.querySelectorAll('.nav-item');
+links.forEach(link => {
+    const href = link.getAttribute('href');
+    if (href === currentPath) {
+        link.classList.add('active');
+    }
+});
+
+
+function abrirModalOpinion() {
+    // Al poner 'flex', el CSS de arriba (justify/align) lo centra automáticamente
+    document.getElementById('modalOpinion').style.display = 'flex';
+}
+
+async function abrirModalRutina() {
+    const idAlumno = localStorage.getItem('usuarioId');
+    const modal = document.getElementById('modalRutina');
+    const contenedor = modal.querySelector('.modal-content'); 
+    
+    modal.style.display = 'flex';
+    
+    // Estructura inicial del modal limpia
+    contenedor.innerHTML = `
+        <h3>Tus Planes de Entrenamiento</h3>
+        <div id="listaPlanes">
+            <p style="color: #888;">Cargando...</p>
+        </div>
+        <button class="btn-cancelar" onclick="cerrarModal()">Cerrar</button>
+    `;
+
+    try {
+        const res = await fetch(`http://localhost:3000/api/rutinas-alumno/${idAlumno}`);
+        const planes = await res.json();
+        const lista = document.getElementById('listaPlanes');
+
+        if (planes.length === 0) {
+            lista.innerHTML = '<p>No tienes planes asignados.</p>';
+            return;
+        }
+
+        lista.innerHTML = ''; // Limpiamos el cargando
+
+        planes.forEach(plan => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-guardar'; 
+            btn.style.width = '100%';
+            btn.textContent = plan.nombre_plan;
+            btn.onclick = () => verDetalleRutina(plan.id, plan.nombre_plan);
+            lista.appendChild(btn);
+        });
+
+    } catch (err) {
+        console.error(err);
+        document.getElementById('listaPlanes').innerHTML = '<p>Error de conexión</p>';
+    }
+}
+
+
+
+
+
+
+async function verDetalleRutina(idRutina, nombrePlan) {
+    const modal = document.getElementById('modalRutina');
+    const contenedor = modal.querySelector('.modal-content');
+    
+    contenedor.innerHTML = `<h3>${nombrePlan}</h3><p>Cargando ejercicios...</p>`;
+
+    try {
+        const res = await fetch(`http://localhost:3000/api/ejercicios-rutina/${idRutina}`);
+        const ejercicios = await res.json();
+
+        // 1. Agrupamos los ejercicios por día en un objeto
+        const ejerciciosPorDia = {};
+        ejercicios.forEach(ej => {
+            if (!ejerciciosPorDia[ej.dia]) {
+                ejerciciosPorDia[ej.dia] = [];
+            }
+            ejerciciosPorDia[ej.dia].push(ej);
+        });
+
+        // 2. Construimos el HTML dinámico
+        let contenidoHtml = `<h2 style="color: #4d94ff; margin-bottom: 20px;">${nombrePlan}</h2>`;
+
+        // Recorremos cada día agrupado
+        for (const dia in ejerciciosPorDia) {
+            contenidoHtml += `
+                <div class="dia-entrenamiento" style="margin-bottom: 25px; text-align: left;">
+                    <h4 style="background: rgba(77, 148, 255, 0.2); padding: 8px; border-left: 4px solid #4d94ff; color: #fff;">
+                        ${dia.toUpperCase()}
+                    </h4>
+                    <table style="width:100%; color:white; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #444; color: #aaa; font-size: 0.8rem;">
+                                <th style="padding: 10px 5px;">EJERCICIO</th>
+                                <th style="padding: 10px 5px; text-align: center;">S</th>
+                                <th style="padding: 10px 5px; text-align: center;">R</th>
+                                <th style="padding: 10px 5px;">OBS</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+            ejerciciosPorDia[dia].forEach((ej, index) => {
+                contenidoHtml += `
+                    <tr style="border-bottom: 1px solid #222;">
+                        <td style="padding: 12px 5px;">${index + 1}. ${ej.nombre_ejercicio}</td>
+                        <td style="padding: 12px 5px; text-align: center;">${ej.series}</td>
+                        <td style="padding: 12px 5px; text-align: center;">${ej.repeticiones}</td>
+                        <td style="padding: 12px 5px; font-style: italic; color: #bbb; font-size: 0.8rem;">
+                            ${ej.observaciones || '-'}
+                        </td>
+                    </tr>`;
+            });
+
+            contenidoHtml += `</tbody></table></div>`;
+        }
+
+        // Botón para volver atrás
+        contenidoHtml += `<button class="btn-guardar" style="margin-top:20px; background: #444;" onclick="abrirModalRutina()">Volver a Planes</button>`;
+        
+        contenedor.innerHTML = contenidoHtml;
+
+    } catch (err) {
+        console.error("Error:", err);
+        contenedor.innerHTML = '<h3>Error al cargar los detalles</h3>';
+    }
+}
+
+
+
+
+
+function cerrarModal() {
+    document.getElementById('modalRutina').style.display = 'none';
+}
+
+
+
+function cerrarModales() {
+    document.getElementById('modalRutina').style.display = 'none';
+    document.getElementById('modalOpinion').style.display = 'none';
+}
+
+function enviarOpinionFicticia() {
+    const opinion = document.getElementById('textoOpinion').value;
+    if(opinion.trim() === "") {
+        alert("Por favor, escribe algo antes de enviar.");
+        return;
+    }
+    alert("¡Tu opinión ha sido enviada con éxito! (Simulado)");
+    cerrarModales();
+    document.getElementById('textoOpinion').value = "";
+}
+
+// Cerrar si hace click afuera del cuadro blanco
+window.onclick = function(event) {
+    if (event.target.className === 'modal-overlay') {
+        cerrarModales();
+    }
+}
+
+
+    function cerrarSesion() {
+    // Borramos los datos del profesor del almacenamiento local
+    localStorage.removeItem('usuarioLogueado');
+    // Redirigimos al index (o login)
+    window.location.href = '/public/sesion.html'; 
+}
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Importante: En tu captura el ID es 'usuarioId'
+        const idDelAlumno = localStorage.getItem('usuarioId');
+
+        if (idDelAlumno) {
+            fetch(`http://localhost:3000/api/profesor-asignado/${idDelAlumno}`)
+                .then(res => res.json())
+                .then(data => {
+                    // Usamos el ID exacto de tu HTML: nombreProfesor
+                    const elH3 = document.getElementById('nombreProfesor');
+                    if (data && elH3) {
+                        elH3.textContent = `${data.nombre} ${data.apellido}`;
+                    }
+                })
+                .catch(err => console.error("Error al buscar profe:", err));
+        }
+    });
+
+
+
+
+
+</script>
+
+
+</body>
+</html>

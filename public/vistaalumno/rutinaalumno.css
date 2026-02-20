@@ -1,0 +1,458 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    color: #fff;
+    position: relative;
+    overflow-x: hidden;
+    padding-top: 80px; /* Mantiene el espacio para el nav fijo */
+}   
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* La imagen de fondo va aquí */
+    background-image: url('/public/media/fondorutinaalumno.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    
+    /* CAPA OSCURA: Ajusta el 0.7 para más o menos oscuridad */
+    background-color: rgba(0, 0, 0, 0.7); 
+    background-blend-mode: darken;
+
+    /* FILTROS: Ahora sí se aplicarán solo a la imagen de fondo */
+    filter: contrast(90%) brightness(90%); 
+    
+    z-index: -1; /* Envía la imagen detrás del contenido */
+}
+
+/* NAVBAR BASE */
+.navbar {
+    background-color: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(10px); /* Efecto de desenfoque */
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    border-bottom: 1px solid #333;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 1200px;
+}
+
+.nav-logo {
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+
+.nav-logo span {
+    color: #4d94ff; /* El azul que venimos usando */
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    align-items: center;
+}
+
+.nav-item {
+    color: #bbb;
+    text-decoration: none;
+    padding: 10px 15px;
+    font-size: 0.95rem;
+    transition: 0.3s;
+}
+
+.nav-item:hover {
+    color: #4d94ff;
+}
+
+.btn-logout {
+    background-color: #cc0000;
+    color: white;
+    border-radius: 5px;
+    margin-left: 10px;
+}
+
+.btn-logout:hover {
+    background-color: #ff3333;
+    color: white;
+}
+
+/* MENÚ HAMBURGUESA (Mobile) */
+.menu-toggle {
+    display: none; /* Oculto en PC */
+    flex-direction: column;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: #fff;
+    margin: 4px 0;
+    transition: 0.4s;
+}
+.nav-item.active {
+    color: #4d94ff !important; /* El azul de tu marca */
+    font-weight: bold;
+    border-bottom: 2px solid #4d94ff; /* Una línea sutil debajo */
+}
+
+/* RESPONSIVE - MOBILE */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: flex;
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 70px;
+        right: -100%; /* Escondido a la derecha */
+        flex-direction: column;
+        background-color: #1a1a1a;
+        width: 100%;
+        height: calc(100vh - 70px);
+        text-align: center;
+        transition: 0.5s;
+        padding-top: 50px;
+    }
+
+    .nav-links.active {
+        right: 0; /* Aparece al clickear */
+    }
+
+    .nav-item {
+        font-size: 1.2rem;
+        padding: 20px;
+        display: block;
+        width: 100%;
+    }
+}
+
+
+.rutinas-container {
+    padding: 40px 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    min-height: 80vh;
+}
+
+.rutinas-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.rutinas-header h2 {
+    font-size: 2rem;
+    color: #fff;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #4d94ff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* TARJETA DEL PROFESOR */
+.card-profesor {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.prof-info {
+    margin-bottom: 25px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px;
+}
+
+.label {
+    color: #888;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.prof-info h3 {
+    font-size: 1.5rem;
+    color: #fff;
+    margin-top: 5px;
+}
+
+/* BOTONES */
+.acciones-rutina {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.btn-rutina {
+    background-color: #4d94ff;
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-rutina:hover {
+    background-color: #357ae8;
+    transform: translateY(-2px);
+}
+
+.btn-opinion {
+    background: none;
+    border: 1px solid #4d94ff;
+    color: #4d94ff;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-opinion:hover {
+    background-color: rgba(77, 148, 255, 0.1);
+}
+
+/* Ajustes para los modales que ya definimos antes */
+.modal-overlay {
+    display: none; /* Se activa por JS */
+}
+
+/* EL FONDO OSCURO: Ocupa toda la pantalla y centra el contenido */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85); /* Fondo negro traslúcido */
+    backdrop-filter: blur(5px);           /* Desenfoque estético */
+    display: none;                         /* Se activa con JS (display: flex) */
+    justify-content: center;               /* Centra horizontal */
+    align-items: center;                   /* Centra vertical */
+    z-index: 2000;                         /* Por encima de todo */
+    padding: 20px;
+}
+
+/* EL CUADRO DEL MODAL: El rectángulo donde está la info */
+.modal-content {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    padding: 25px;
+    border-radius: 15px;
+    width: 90%;            /* En mobile ocupa casi todo el ancho */
+    max-width: 450px;
+    max-height: 85vh; /* Que no ocupe más del 85% de la pantalla */
+    overflow-y: auto;      /* En PC no supera este tamaño */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* TEXTAREA DENTRO DEL MODAL (Para la opinión) */
+.input-moderno-area {
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    resize: none;
+    margin: 15px 0;
+    box-sizing: border-box;
+}
+
+/* BOTONES DEL MODAL */
+.modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* --- CONTENEDOR DE BOTONES EN EL MODAL --- */
+.modal-buttons {
+    display: flex;
+    flex-direction: column; /* En mobile uno sobre otro */
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* --- BOTÓN ENVIAR / GUARDAR (Estilo Destacado) --- */
+.btn-guardar {
+    background: linear-gradient(135deg, #4d94ff 0%, #357ae8 100%);
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(77, 148, 255, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-guardar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(77, 148, 255, 0.4);
+    filter: brightness(1.1);
+}
+
+.btn-guardar:active {
+    transform: translateY(0);
+}
+
+/* --- BOTÓN CANCELAR / CERRAR (Estilo Sutil) --- */
+.btn-cancelar {
+    background-color: transparent;
+    color: #888;
+    border: 1px solid #333;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-cancelar:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    border-color: #555;
+}
+
+/* --- AJUSTE PARA PC (BOTONES LADO A LADO) --- */
+@media (min-width: 600px) {
+    .modal-buttons {
+        flex-direction: row-reverse; /* El de enviar queda a la derecha */
+        justify-content: flex-start;
+        gap: 15px;
+    }
+
+    .btn-guardar, .btn-cancelar {
+        width: auto;
+        min-width: 120px;
+        padding: 10px 25px;
+    }
+}
+
+.main-footer {
+    background-color: #0a0a0a;
+    padding: 40px 0 20px 0;
+    border-top: 1px solid #222;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.footer-logo img {
+    height: 60px; /* Tamaño ajustable de tu logo */
+    margin-bottom: 25px;
+    border-radius: 50%;
+    
+}
+
+.footer-socials {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.social-link img {
+    width: 30px;
+    height: 30px;
+    transition: transform 0.3s ease;
+    filter: invert(0.7); /* Color grisáceo inicial */
+}
+
+.social-link:hover img {
+    transform: scale(1.2);
+    filter: invert(1) sepia(1) saturate(5) hue-rotate(190deg); /* Se vuelve azul al pasar el mouse */
+}
+
+.copyright {
+    color: #555;
+    font-size: 0.85rem;
+    margin-top: 20px;
+}
+
+
+/* --- CONTENEDOR DE BOTONES DE PLANES --- */
+#listaPlanes {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espacio entre botones */
+    padding: 20px 0;
+    width: 100%;
+}
+
+/* --- CENTRAR EL BOTÓN CERRAR --- */
+.modal-content .btn-cancelar {
+    display: block;
+    margin: 20px auto 0 auto; /* Centrado horizontal */
+    width: fit-content;
+    padding: 10px 30px;
+}
+
+/* --- CUSTOM SCROLLBAR (Para que no sea el gris feo de Windows) --- */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #4d94ff; /* El azul de tu marca */
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: #357ae8;
+}
+
