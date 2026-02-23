@@ -1,10 +1,157 @@
+:root {
+    --bg-dark: #0b0b0b;
+    --card-bg: #1c1c1c;
+    --blue-main: #1468B1;
+    --blue-glow: #2A7ABF;
+    --text-white: #ffffff;
+    --text-gray: #a0a0a0;
+    --red-alert: #e74c3c;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
 body {
-    background-color: #0a0a0a !important; /* El mismo negro que el Panel de Control */
-    color: white; /* Texto blanco para que se lea bien */
     margin: 0;
     padding: 0;
     min-height: 100vh;
+    background-color: var(--bg-dark);
+    color: #fff;
+    position: relative;
+    overflow-x: hidden;
+    padding-top: 80px; /* Mantiene el espacio para el nav fijo */
+}   
+
+
+
+.navbar {
+    background-color: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(10px); /* Efecto de desenfoque */
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    border-bottom: 1px solid #333;
 }
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 1200px;
+}
+
+.nav-logo {
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+
+.nav-logo span {
+    color: #4d94ff; /* El azul que venimos usando */
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    align-items: center;
+}
+
+.nav-item {
+    color: #bbb;
+    text-decoration: none;
+    padding: 10px 15px;
+    font-size: 0.95rem;
+    transition: 0.3s;
+}
+
+.nav-item:hover {
+    color: #4d94ff;
+}
+
+.btn-logout {
+    background-color: #cc0000;
+    color: white;
+    border-radius: 5px;
+    margin-left: 10px;
+}
+
+.btn-logout:hover {
+    background-color: #ff3333;
+    color: white;
+}
+
+/* MENÚ HAMBURGUESA (Mobile) */
+.menu-toggle {
+    display: none; /* Oculto en PC */
+    flex-direction: column;
+    cursor: pointer;
+    background: none;
+    border: none;
+    margin-top: 10px;
+}
+
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: #fff;
+    margin: 4px 0;
+    transition: 0.4s;
+}
+
+.nav-item.active {
+    color: #4d94ff !important; /* El azul de tu marca */
+    font-weight: bold;
+    border-bottom: 2px solid #4d94ff; /* Una línea sutil debajo */
+}
+
+/* RESPONSIVE - MOBILE */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: flex;
+        margin-left: 200px;
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 70px;
+        right: -100%; /* Escondido a la derecha */
+        flex-direction: column;
+        background-color: #1a1a1a;
+        width: 100%;
+        height: calc(100vh - 70px);
+        text-align: center;
+        transition: 0.5s;
+        padding-top: 50px;
+    }
+
+    .nav-links.active {
+        right: 0; /* Aparece al clickear */
+    }
+
+    .nav-item {
+        font-size: 1.2rem;
+        padding: 20px;
+        display: block;
+        width: 100%;
+    }
+}
+
+
+
+
+
 
 /* 2. El contenedor de la tabla y los títulos */
 .container {
@@ -18,107 +165,6 @@ body {
 }
 
 /* --- Navegación General --- */
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 5%;
-    background-color: #000;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-.logo-text {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #2447ff; /* Azul del logo */
-    text-decoration: none;
-}
-
-.nav-links {
-    display: flex;
-    list-style: none;
-    align-items: center;
-    gap: 25px;
-}
-
-.nav-links a {
-    color: white;
-    text-decoration: none;
-    font-size: 1rem;
-    transition: 0.3s;
-    padding: 5px 0;
-}
-
-/* Indicador de página activa (Subrayado Azul) */
-.nav-links a.active {
-    border-bottom: 2px solid #2447ff;
-    color: white;
-}
-
-/* Botón Cerrar Sesión (Borde Rojo) */
-.btn-cerrar-sesion {
-    background: transparent;
-    border: 1px solid #ff4d4d;
-    color: #ff4d4d;
-    padding: 7px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: 0.3s;
-}
-
-.btn-cerrar-sesion:hover {
-    background: #ff4d4d;
-    color: white;
-}
-
-/* --- RESPONSIVE (Menú Hamburguesa) --- */
-@media (max-width: 768px) {
-    .menu-toggle {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        width: 30px;
-        height: 21px; /* Altura para separar las 3 barras */
-        cursor: pointer;
-    }
-
-    .bar {
-        width: 100%;
-        height: 3px;
-        background-color: white;
-        border-radius: 10px;
-        transition: 0.3s;
-    }
-
-    .nav-links {
-        display: none; /* Oculto por defecto */
-        flex-direction: column;
-        position: absolute;
-        top: 60px;
-        left: 0;
-        width: 100%;
-        background-color: #000;
-        padding: 20px 0;
-        border-bottom: 2px solid #2447ff;
-    }
-
-    .nav-links.active {
-        display: flex; /* Se muestra al abrir */
-    }
-
-    .nav-links li {
-        margin: 15px 0;
-        width: 100%;
-        text-align: center;
-    }
-}
-
-
-
-
 
 
 
@@ -237,60 +283,6 @@ tr:hover {
 }
 
 /* --- RESPONSIVE (Mobile) --- */
-@media (max-width: 768px) {
-    .container { padding: 10px; }
-    
-    table, thead, tbody, th, td, tr { display: block; }
-    
-    thead tr { display: none; }
-    
-    tr {
-        margin-bottom: 20px;
-        border: 1px solid #333;
-        border-radius: 12px;
-        padding: 10px;
-    }
-    
-    td {
-        text-align: right;
-        padding-left: 50% !important;
-        position: relative;
-        border-bottom: 1px solid #222;
-    }
-
-    td:last-child { border-bottom: none; }
-
-    td:before {
-        content: attr(data-label);
-        position: absolute;
-        left: 15px;
-        width: 45%;
-        text-align: left;
-        font-weight: bold;
-        color: #2447ff;
-    }
-
-    .btn-rutina { width: 100%; margin-top: 10px; }
-}
-
-
-
-.botones-acciones {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-}
-
-@media (max-width: 768px) {
-    .botones-acciones {
-        flex-direction: column; /* Uno abajo del otro en celular */
-        gap: 5px;
-    }
-    .btn-rutina {
-        width: 100%;
-        padding: 10px;
-    }
-}
 
 
 
@@ -1166,3 +1158,6 @@ input, select, textarea {
         padding: 10px;
     }
 }
+
+
+

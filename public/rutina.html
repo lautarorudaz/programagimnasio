@@ -9,23 +9,25 @@
 <body>
 
 <nav class="navbar">
-    <div class="logo-container">
-        <a href="indexprofesor.html" class="logo-text">Anima App</a>
-    </div>
+        <div class="nav-container">
+            <a href="indexalumno.html" class="nav-logo">GYM<span>APP</span></a>
 
-    <div class="menu-toggle" id="mobile-menu">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </div>
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
 
-    <ul class="nav-links">
-        <li><a href="/public/indexprofesor.html">Inicio</a></li>
-        <li><a href="/public/alumno.html">Alumnos</a></li>
-        <li><a href="/public/rutina.html" class="active">Rutinas</a></li>
-        <li><button class="btn-cerrar-sesion" onclick="cerrarSesion()">Cerrar Sesión</button></li>
-    </ul>
-</nav>
+            <ul class="nav-links">
+                <li><a href="/public/indexprofesor.html" class="nav-item">Inicio</a></li>
+                <li><a href="/public/alumno.html" class="nav-item">Alumnos</a></li>
+                <li><a href="/public/rutina.html" class="nav-item active">Rutinas</a></li>
+                <li><a href="/public/comentarios.html" class="nav-item">Comentarios</a></li>
+                <li><a href="#" class="nav-item btn-logout" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+            </ul>
+        </div>
+    </nav>
+
 
 <main>
     <header class="header-section">
@@ -56,10 +58,21 @@
 
 <script>
 
-    function cerrarSesion() {
-    // Borramos los datos del profesor del almacenamiento local
+const menuToggle = document.getElementById('mobile-menu');
+const navLinks = document.querySelector('.nav-links');
+
+menuToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+    
+    // Animación simple de las barritas
+    menuToggle.classList.toggle('is-active');
+});
+
+
+function cerrarSesion() {
+    
     localStorage.removeItem('usuarioLogueado');
-    // Redirigimos al index (o login)
+    
     window.location.href = 'sesion.html'; 
 }
 
@@ -130,15 +143,6 @@ function actualizarListaPorDia() {
 
 
 
-
-
-    document.getElementById('mobile-menu').addEventListener('click', function() {
-    const navLinks = document.querySelector('.nav-links');
-    navLinks.classList.toggle('active');
-    
-    // Opcional: animación simple de las barras
-    this.classList.toggle('is-active');
-});
 
 
 document.addEventListener('DOMContentLoaded', () => {

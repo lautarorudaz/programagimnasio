@@ -550,4 +550,108 @@ app.get('/api/ejercicios-rutina/:idRutina', (req, res) => {
 });
 
 
+app.get('/api/profesor-asignado/:idAlumno', (req, res) => {
+    const idAlumno = req.params.idAlumno;
+    const sql = `
+        SELECT u.nombre, u.apellido 
+        FROM usuarios u 
+        JOIN alumnos a ON u.id = a.profesor_id 
+        WHERE a.id = ?`;
+
+    db.query(sql, [idAlumno], (err, result) => {
+        if (err) return res.status(500).json(err);
+        if (result.length > 0) {
+            res.json(result[0]); // Devuelve {nombre: "Gonzalo", apellido: "Almiron"}
+        } else {
+            res.status(404).json({ message: "No asignado" });
+        }
+    });
+});
+
+
+
+app.post('/api/comentarios', (req, res) => {
+    const { alumno_id, mensaje } = req.body; // Ya no pedimos profesor_id al frontend
+
+    // 1. Buscamos quién es el profesor de este alumno en la tabla 'alumnos'
+    const buscarProfeQuery = "SELECT profesor_id FROM alumnos WHERE id = ?";
+
+    db.query(buscarProfeQuery, [alumno_id], (err, results) => {
+        if (err || results.length === 0) {
+            console.error("Error al buscar profesor:", err);
+            return res.status(500).json({ error: "No se encontró el profesor asignado" });
+        }
+
+        const profesor_id = results[0].profesor_id;
+
+        // 2. Ahora que tenemos el ID del profe, insertamos el comentario
+        const insertarQuery = `
+            INSERT INTO comentarios (alumno_id, profesor_id, mensaje, estado) 
+            VALUES (?, ?, ?, 0)
+        `;
+
+        db.query(insertarQuery, [alumno_id, profesor_id, mensaje], (err, result) => {
+            if (err) {
+                console.error("Error al insertar comentario:", err);
+                return res.status(500).json({ error: "Error al guardar mensaje" });
+            }
+            res.status(200).json({ message: "Mensaje enviado con éxito" });
+        });
+    });
+});
+
+
+
+
+// 1. Obtener mensajes NO LEÍDOS para un profesor
+app.get('/api/comentarios/pendientes/:profeId', (req, res) => {
+    const { profeId } = req.params;
+    
+    // Hacemos un JOIN para traer el nombre del alumno que escribió
+    const sql = `
+        SELECT c.id, c.mensaje, c.fecha, a.nombre as alumno_nombre
+        FROM comentarios c
+        JOIN alumnos a ON c.alumno_id = a.id
+        WHERE c.profesor_id = ? AND c.estado = 0
+        ORDER BY c.fecha DESC
+    `;
+
+    db.query(sql, [profeId], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// 2. Marcar mensaje como LEÍDO (Estado 1)
+app.put('/api/comentarios/leer/:mensajeId', (req, res) => {
+    const { mensajeId } = req.params;
+    const sql = "UPDATE comentarios SET estado = 1 WHERE id = ?";
+
+    db.query(sql, [mensajeId], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: "Mensaje archivado" });
+    });
+});
+
+
+// Obtener el historial completo de mensajes (leídos y no leídos)
+app.get('/api/comentarios/historial/:profeId', (req, res) => {
+    const { profeId } = req.params;
+    
+    const sql = `
+        SELECT c.id, c.mensaje, c.fecha, c.estado, a.nombre as alumno_nombre
+        FROM comentarios c
+        JOIN alumnos a ON c.alumno_id = a.id
+        WHERE c.profesor_id = ?
+        ORDER BY c.fecha DESC
+    `;
+
+    db.query(sql, [profeId], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+
+
 app.listen(3000, () => console.log('🚀 Servidor en http://localhost:3000'));

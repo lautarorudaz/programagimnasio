@@ -8,25 +8,25 @@
 </head>
 <body>
 
-  <nav class="navbar">
-    <div class="nav-container">
-        <a href="#" class="logo">Anima App</a>
-        
-        <button class="menu-toggle" id="mobile-menu">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-        </button>
+     <nav class="navbar">
+        <div class="nav-container">
+            <a href="indexalumno.html" class="nav-logo">GYM<span>APP</span></a>
 
-        <ul class="nav-links" id="nav-links">
-            <li><a href="indexprofesor.html">Inicio</a></li>
-            <li><a href="alumno.html" class="active">Alumnos</a></li>
-            <li><a href="cuotas.html">Cuotas</a></li>
-            <li><a href="/public/rutina.html">Rutinas</a></li>
-            <li><button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button></li>
-        </ul>
-    </div>
-</nav>
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+
+            <ul class="nav-links">
+                <li><a href="/public/indexprofesor.html" class="nav-item">Inicio</a></li>
+                <li><a href="/public/alumno.html" class="nav-item active">Alumnos</a></li>
+                <li><a href="/public/rutina.html" class="nav-item">Rutinas</a></li>
+                <li><a href="/public/comentarios.html" class="nav-item">Comentarios</a></li>
+                <li><a href="#" class="nav-item btn-logout" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+            </ul>
+        </div>
+    </nav>
 
     <main class="main-content">
         <div class="header-section">
@@ -87,6 +87,15 @@
 
     <script>
 
+const menuToggle = document.getElementById('mobile-menu');
+const navLinks = document.querySelector('.nav-links');
+
+menuToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+    
+    // Animación simple de las barritas
+    menuToggle.classList.toggle('is-active');
+});
 
 // 1. VARIABLES GLOBALES
     const formulario = document.getElementById('formAlumno');
@@ -256,13 +265,6 @@ document.addEventListener('DOMContentLoaded', cargarAlumnos);
 
 
 
-// Lógica para abrir/cerrar menú hamburguesa
-const menuBtn = document.getElementById('mobile-menu');
-const navLinks = document.getElementById('nav-links');
-
-menuBtn.addEventListener('click', () => {
-    navLinks.classList.toggle('active');
-});
 
 // MODIFICA tu función cargarAlumnos para que incluya los data-label:
 alumnos.forEach(alum => {

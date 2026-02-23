@@ -10,56 +10,24 @@
 }
 
 /* --- RESET BÁSICO --- */
-body {
+* {
     margin: 0;
     padding: 0;
-    background-color: var(--bg-dark);
-    color: var(--text-white);
+    box-sizing: border-box;
     font-family: 'Segoe UI', sans-serif;
 }
 
-/* --- NAVIGATION (Menú superior centrado) --- */
-.top-nav {
-    background-color: #12274B;
-    padding: 1rem 2rem;
-    border-bottom: 2px solid var(--blue-main);
-}
-
-.nav-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.nav-links {
-    list-style: none;
-    display: flex;
-    gap: 25px;
+body {
+    margin: 0;
     padding: 0;
-}
+    min-height: 100vh;
+    background-color: var(--bg-dark);
+    color: #fff;
+    position: relative;
+    overflow-x: hidden;
+    padding-top: 80px; /* Mantiene el espacio para el nav fijo */
+} 
 
-.nav-links a {
-    color: var(--text-gray);
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.nav-links a.active {
-    color: var(--text-white);
-    border-bottom: 2px solid var(--blue-glow);
-}
-
-/* --- BOTÓN LOGOUT --- */
-.btn-logout {
-    background: transparent;
-    border: 1px solid var(--red-alert);
-    color: var(--red-alert);
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-}
 
 /* --- CONTENIDO PRINCIPAL --- */
 .main-content {
@@ -236,43 +204,14 @@ tr:hover {
 
 
 
-/* --- Estilos Generales Navbar --- */
-.navbar { background: #0a0a0a; padding: 1rem; position: sticky; top: 0; z-index: 1000; }
-.nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: auto; }
-.nav-links { display: flex; list-style: none; gap: 20px; align-items: center; }
-.nav-links a { color: white; text-decoration: none; font-weight: 500; }
-
-/* --- Menu Hamburguesa --- */
-.menu-toggle { display: none; flex-direction: column; cursor: pointer; background: transparent; border: none; }
-.bar { height: 3px; width: 25px; background-color: white; margin: 4px 0; border-radius: 10px; transition: 0.3s; }
 
 
 
 
 /* --- RESPONSIVE MOBILE --- */
-@media (max-width: 768px) {
-    .menu-toggle { display: flex; } /* Mostramos el botón */
-
-    .nav-links {
-        display: none; /* Escondemos los links por defecto */
-        flex-direction: column;
-        position: absolute;
-        top: 60px;
-        left: 0;
-        width: 100%;
-        background: #0a0a0a;
-        padding: 20px;
-        text-align: center;
-        border-bottom: 2px solid #27ae60;
-    }
-
-    .nav-links.active { display: flex; } /* Se muestra al clickear */
-
-    /* TABLA RESPONSIVE (Tarjetas) */
-  
 
   
-}
+
 
 @media (max-width: 768px) {
     /* 1. Escondemos la cabecera azul que molesta */
@@ -389,5 +328,123 @@ tr:hover {
         border: 1px solid #555 !important;
         padding: 10px !important;
         order: 2; /* El de cancelar abajo */
+    }
+}
+
+.navbar {
+    background-color: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(10px); /* Efecto de desenfoque */
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    border-bottom: 1px solid #333;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 1200px;
+}
+
+.nav-logo {
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+
+.nav-logo span {
+    color: #4d94ff; /* El azul que venimos usando */
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    align-items: center;
+}
+
+.nav-item {
+    color: #bbb;
+    text-decoration: none;
+    padding: 10px 15px;
+    font-size: 0.95rem;
+    transition: 0.3s;
+}
+
+.nav-item:hover {
+    color: #4d94ff;
+}
+
+.btn-logout {
+    background-color: #cc0000;
+    color: white;
+    border-radius: 5px;
+    margin-left: 10px;
+}
+
+.btn-logout:hover {
+    background-color: #ff3333;
+    color: white;
+}
+
+/* MENÚ HAMBURGUESA (Mobile) */
+.menu-toggle {
+    display: none; /* Oculto en PC */
+    flex-direction: column;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: #fff;
+    margin: 4px 0;
+    transition: 0.4s;
+}
+
+.nav-item.active {
+    color: #4d94ff !important; /* El azul de tu marca */
+    font-weight: bold;
+    border-bottom: 2px solid #4d94ff; /* Una línea sutil debajo */
+}
+
+/* RESPONSIVE - MOBILE */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: flex;
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 70px;
+        right: -100%; /* Escondido a la derecha */
+        flex-direction: column;
+        background-color: #1a1a1a;
+        width: 100%;
+        height: calc(100vh - 70px);
+        text-align: center;
+        transition: 0.5s;
+        padding-top: 50px;
+    }
+
+    .nav-links.active {
+        right: 0; /* Aparece al clickear */
+    }
+
+    .nav-item {
+        font-size: 1.2rem;
+        padding: 20px;
+        display: block;
+        width: 100%;
     }
 }

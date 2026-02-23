@@ -58,9 +58,9 @@
     <div class="modal-content">
         <h3>Enviar Opinión</h3>
         <p class="label-sutil">¿Cómo te sentiste hoy? Contale a tu profe:</p>
-        <textarea id="textoOpinion" placeholder="Escribe tu mensaje aquí..." rows="5" class="input-moderno-area"></textarea>
+        <textarea id="textareaOpinion" placeholder="Escribe tu mensaje aquí..." rows="5" class="input-moderno-area"></textarea>
         <div class="modal-buttons">
-            <button class="btn-guardar" onclick="enviarOpinionFicticia()">Enviar Mensaje</button>
+            <button type="button" class="btn-enviar" onclick="enviarMensajeReal()">ENVIAR MENSAJE</button>
             <button class="btn-cancelar" onclick="cerrarModales()">Cancelar</button>
         </div>
     </div>
@@ -97,16 +97,46 @@ menuToggle.addEventListener('click', () => {
 });
 
 
-const currentPath = window.location.pathname.split("/").pop();
 
-// Buscar todos los enlaces y comparar con la URL
-const links = document.querySelectorAll('.nav-item');
-links.forEach(link => {
-    const href = link.getAttribute('href');
-    if (href === currentPath) {
-        link.classList.add('active');
+
+
+
+
+
+async function enviarMensajeReal() {
+    const textarea = document.getElementById("textareaOpinion");
+    const mensajeTexto = textarea.value;
+    
+    // Suponiendo que el ID del alumno lo manejas por variable o sesión
+    const alumnoId = 8; // Jose
+
+    if (!mensajeTexto.trim()) return alert("Escribe un mensaje");
+
+    const datos = {
+        alumno_id: alumnoId,
+        mensaje: mensajeTexto
+    };
+
+    try {
+        const response = await fetch('http://localhost:3000/api/comentarios', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+
+        if (response.ok) {
+            alert("¡Enviado! Tu profe ya lo tiene en su bandeja.");
+            textarea.value = "";
+            cerrarModales();
+        }
+    } catch (error) {
+        console.error("Error:", error);
     }
-});
+}
+
+
+
+
 
 
 function abrirModalOpinion() {

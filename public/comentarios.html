@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/public/comentarios.css">
+</head>
+<body>
+       <nav class="navbar">
+        <div class="nav-container">
+            <a href="indexalumno.html" class="nav-logo">GYM<span>APP</span></a>
+
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+
+            <ul class="nav-links">
+                <li><a href="/public/indexprofesor.html" class="nav-item">Inicio</a></li>
+                <li><a href="/public/alumno.html" class="nav-item">Alumnos</a></li>
+                <li><a href="/public/rutina.html" class="nav-item">Rutinas</a></li>
+                <li><a href="/public/comentarios.html" class="nav-item active">Comentarios</a></li>
+                <li><a href="#" class="nav-item btn-logout" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+            </ul>
+        </div>
+    </nav>
+
+
+<div class="seccion-comentarios-profe">
+    <h2 class="titulo-principal">Mensajes Pendientes</h2>
+    <div id="listaComentarios" class="grid-centrado">
+        </div>
+</div>
+
+
+
+
+<div class="contenedor-acciones-profe">
+    <button class="btn-abrir-historial" onclick="abrirModalHistorial()">
+        <i class="fas fa-history"></i> Ver Historial de Mensajes
+    </button>
+</div>
+
+<div id="modalHistorial" class="modal-overlay">
+    <div class="modal-content-historial">
+        <div class="header-modal">
+            <h2><i class="fas fa-comments"></i> Historial de Comentarios</h2>
+            <button class="btn-cerrar-modal" onclick="cerrarModalHistorial()">&times;</button>
+        </div>
+        <div id="contenidoHistorial" class="cuerpo-modal-scroll">
+            </div>
+    </div>
+</div>
+
+
+    <script>
+ const menuToggle = document.getElementById('mobile-menu');
+const navLinks = document.querySelector('.nav-links');
+
+menuToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+    
+    // Animación simple de las barritas
+    menuToggle.classList.toggle('is-active');
+});
+
+  function cerrarSesion() {
+    // Borramos los datos del profesor del almacenamiento local
+    localStorage.removeItem('usuarioLogueado');
+    // Redirigimos al index (o login)
+    window.location.href = '/public/sesion.html'; 
+}
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderizarComentarios();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderizarComentarios();
+});
+
+async function renderizarComentarios() {
+    const contenedor = document.getElementById('listaComentarios');
+    const usuarioLogueado = JSON.parse(localStorage.getItem('usuario')); // ID 16 de Gonzalo
+
+    try {
+        const response = await fetch(`http://localhost:3000/api/comentarios/${usuarioLogueado.id}`);
+        const datos = await response.json();
+
+        if (datos.length === 0) {
+            contenedor.innerHTML = `<p style="color: #666; text-align: center; width: 100%;">No hay comentarios nuevos todavía.</p>`;
+            return;
+        }
+
+        contenedor.innerHTML = '';
+        datos.forEach((comentario) => {
+            contenedor.innerHTML += `
+                <div class="cuadro-mensaje" id="msj-${comentario.id}">
+                    <div class="header-mensaje">
+                        <span class="nombre-alumno">${comentario.nombre}</span>
+                        <span class="hora">${new Date(comentario.fecha).toLocaleDateString()}</span>
+                    </div>
+                    <div class="cuerpo-mensaje">
+                        <p class="label-msg">Mensaje:</p>
+                        <div class="caja-text">${comentario.mensaje}</div>
+                    </div>
+                    <button class="btn-leido" onclick="marcarComoLeido(${comentario.id})">Marcar como leído</button>
+                </div>`;
+        });
+    } catch (error) {
+        console.error("Error al cargar comentarios:", error);
+    }
+}
+
+
+
+async function cargarComentariosReales() {
+    const contenedor = document.getElementById('listaComentarios');
+    const profeId = 16; // ID de Gonzalo
+
+    try {
+        const res = await fetch(`http://localhost:3000/api/comentarios/pendientes/${profeId}`);
+        const mensajes = await res.json();
+
+        if (mensajes.length === 0) {
+            contenedor.innerHTML = '<p style="text-align:center; color:gray;">No tienes mensajes nuevos.</p>';
+            return;
+        }
+
+        contenedor.innerHTML = ''; // Limpiamos la simulación
+        mensajes.forEach(msg => {
+            contenedor.innerHTML += `
+                <div class="cuadro-mensaje" id="tarjeta-${msg.id}">
+                    <div class="header-mensaje">
+                        <span class="nombre-alumno">${msg.alumno_nombre}</span>
+                        <span class="hora">${new Date(msg.fecha).toLocaleDateString()}</span>
+                    </div>
+                    <div class="cuerpo-mensaje">
+                        <p>${msg.mensaje}</p>
+                    </div>
+                    <button class="btn-leido" onclick="archivarMensaje(${msg.id})">
+                        Marcar como leído
+                    </button>
+                </div>
+            `;
+        });
+    } catch (err) {
+        console.error("Error cargando mensajes:", err);
+    }
+}
+
+// Función para el botón del profe
+async function archivarMensaje(id) {
+    const res = await fetch(`http://localhost:3000/api/comentarios/leer/${id}`, { method: 'PUT' });
+    if (res.ok) {
+        // Efecto visual: eliminamos el cuadrito de la pantalla
+        document.getElementById(`tarjeta-${id}`).remove();
+    }
+}
+
+// Ejecutar al cargar la página
+document.addEventListener('DOMContentLoaded', cargarComentariosReales);
+
+
+async function abrirModalHistorial() {
+    const modal = document.getElementById('modalHistorial');
+    const contenedor = document.getElementById('contenidoHistorial');
+    const profeId = 16; 
+
+    modal.style.display = 'flex'; // Usamos flex para centrar
+    contenedor.innerHTML = '<div style="text-align:center; padding:20px;">Cargando historial...</div>';
+
+    try {
+        const res = await fetch(`http://localhost:3000/api/comentarios/historial/${profeId}`);
+        const historial = await res.json();
+
+        contenedor.innerHTML = ''; 
+        historial.forEach(msg => {
+            const esLeido = msg.estado === 1;
+            contenedor.innerHTML += `
+                <div class="item-historial ${esLeido ? 'msg-leido' : 'msg-pendiente'}">
+                    <div class="meta-info">
+                        <span><strong>${msg.alumno_nombre}</strong></span>
+                        <span>${new Date(msg.fecha).toLocaleString()}</span>
+                    </div>
+                    <div class="texto-msg">${msg.mensaje}</div>
+                    <div style="margin-top:10px; text-align:right;">
+                        <span class="badge-estado ${esLeido ? 'badge-leido' : 'badge-pendiente'}">
+                            ${esLeido ? 'Leído' : 'Pendiente'}
+                        </span>
+                    </div>
+                </div>
+            `;
+        });
+    } catch (err) {
+        contenedor.innerHTML = '<p>Error al conectar con el servidor.</p>';
+    }
+}
+function cerrarModalHistorial() {
+    document.getElementById('modalHistorial').style.display = 'none';
+}
+
+
+    </script>
+</body>
+</html>

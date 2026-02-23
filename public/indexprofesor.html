@@ -8,25 +8,25 @@
 </head>
 <body>
 
-<nav class="navbar">
-    <div class="logo-container">
-        <a href="indexprofesor.html" class="logo-text">Anima App</a>
-    </div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="indexalumno.html" class="nav-logo">GYM<span>APP</span></a>
 
-    <div class="menu-toggle" id="mobile-menu">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </div>
+            <button class="menu-toggle" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
 
-    <ul class="nav-links">
-        <li><a href="indexprofesor.html" class="active">Inicio</a></li>
-        <li><a href="/public/alumno.html">Alumnos</a></li>
-        <li><a href="cuotas.html">Cuotas</a></li>
-        <li><a href="/public/rutina.html">Rutinas</a></li>
-        <li><button class="btn-cerrar-sesion" onclick="cerrarSesion()">Cerrar Sesión</button></li>
-    </ul>
-</nav>
+            <ul class="nav-links">
+                <li><a href="/public/indexprofesor.html" class="nav-item active">Inicio</a></li>
+                <li><a href="/public/alumno.html" class="nav-item">Alumnos</a></li>
+                <li><a href="/public/rutina.html" class="nav-item">Rutinas</a></li>
+                <li><a href="/public/comentarios.html" class="nav-item">Comentarios</a></li>
+                <li><a href="#" class="nav-item btn-logout" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+            </ul>
+        </div>
+    </nav>
 
 
 
@@ -93,18 +93,21 @@
 <script>
 
 
-const mobileMenu = document.getElementById('mobile-menu');
+const menuToggle = document.getElementById('mobile-menu');
 const navLinks = document.querySelector('.nav-links');
 
-mobileMenu.addEventListener('click', () => {
+menuToggle.addEventListener('click', () => {
     navLinks.classList.toggle('active');
+    
+    // Animación simple de las barritas
+    menuToggle.classList.toggle('is-active');
 });
 
 
 function cerrarSesion() {
-    // Borramos los datos del profesor del almacenamiento local
+    
     localStorage.removeItem('usuarioLogueado');
-    // Redirigimos al index (o login)
+    
     window.location.href = 'sesion.html'; 
 }
 
